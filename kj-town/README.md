@@ -1,4 +1,6 @@
-# KJ-City
+# KJ-Town
+
+![KJ Town](./kj-town.png)
 
 i want to build a quick fancy interactive minecraft-like
 
