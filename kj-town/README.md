@@ -1,6 +1,7 @@
 # KJ-Town
 
 ![KJ Town](./kj-town.png)
+![KJ Town Gemini](./kj-town-gemini.png)
 
 i want to build a quick fancy interactive minecraft-like
 
