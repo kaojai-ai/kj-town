@@ -1,0 +1,289 @@
+@startuml
+!theme plain
+left to right direction
+
+skinparam componentStyle rectangle
+skinparam linetype ortho
+skinparam nodesep 40
+skinparam ranksep 60
+
+' --- Styling matching the image colors ---
+skinparam package {
+    BackgroundColor<<Ingest>> Lavender
+    BorderColor<<Ingest>> Purple
+
+    BackgroundColor<<Booking>> Honeydew
+    BorderColor<<Booking>> Green
+
+    BackgroundColor<<CheckSlip>> PeachPuff
+    BorderColor<<CheckSlip>> Orange
+
+    BackgroundColor<<AI>> Bisque
+    BorderColor<<AI>> Chocolate
+
+    BackgroundColor<<ChatBot>> Azure
+    BorderColor<<ChatBot>> LightBlue
+
+    BackgroundColor<<Integration>> Seashell
+    BorderColor<<Integration>> Orange
+
+    BackgroundColor<<Infra>> WhiteSmoke
+    BorderColor<<Infra>> Gray
+
+    BackgroundColor<<Auth>> MistyRose
+    BorderColor<<Auth>> Red
+
+    BackgroundColor<<Skills>> LavenderBlush
+    BorderColor<<Skills>> DeepPink
+}
+
+' --- Special Styling for CORE ---
+skinparam rectangle {
+    BackgroundColor<<Core>> #11BAA6
+    BorderColor<<Core>> DarkSlateGray
+    FontColor<<Core>> White
+    Shadowing<<Core>> true
+}
+
+skinparam component {
+    BackgroundColor<<Lambda>> Yellow
+}
+
+' --- ✅ Distinguish Humans (icon + color) ---
+skinparam actor {
+  BackgroundColor<<Customer>> Moccasin
+  BorderColor<<Customer>> OrangeRed
+  FontColor<<Customer>> OrangeRed
+
+  BackgroundColor<<TenantAgent>> AliceBlue
+  BorderColor<<TenantAgent>> LightSeaGreen
+  FontColor<<TenantAgent>> LightSeaGreen
+}
+
+' --- Actors (now different icon + color) ---
+actor "Users" as users <<Customer>>
+actor "Admin / Tenant Agent" as ops <<TenantAgent>>
+
+' --- Authentication ---
+package "Authentication" <<Auth>> {
+    cloud "Auth Service" as auth
+}
+
+' --- Infrastructure ---
+package "Infrastructure" <<Infra>> {
+    storage "Object Storage Service\n(Static Site, Backup, User Contents)" as s3
+    component "Image Server\n(Dynamic Transformation)" as img_server <<Lambda>>
+    component "Logs-Shipper" as logs_shipper <<Lambda>>
+    database "Logs Storage" as logs_storage
+    component "Monitoring Dashboard" as monitoring_dashboard
+}
+
+' --- Top Layer: Admin & AI ---
+package "KaoJai - Admin Interface" {
+    component "Admin Dashboard" as admin_ui
+    component "Issue Tracker\nAdmin Console" as issue_console
+    component "Chat Admin Console" as chat_console
+}
+
+package "AI Foundation" <<AI>> {
+    component "Training" as ai_train
+    component "Fine-tuning" as ai_tune
+    component "RAG" as ai_rag
+    component "AI Engine" as ai_engine
+}
+
+' --- Left: Ingest / Chat System ---
+package "Ingest & Chat System" <<Ingest>> {
+
+    rectangle "Messaging Platforms" {
+        component "LINE Messaging" as line_msg #00B900
+        component "Facebook" as fb_msg #1877F2
+        component "Instagram" as ig_msg #E1306C
+    }
+
+    component "IMAP Email Collector" as imap
+    component "Forward Mail Collector" as fwd
+
+    queue "Message Queue\n(send_message)" as queue_send_msg
+    component "Send Message Worker" as msg_worker <<Lambda>>
+}
+
+queue "PubSub" as pubsub
+
+' --- Middle: Core Business Logic ---
+package "Booking System" <<Booking>> {
+    queue "Allotment Queue" as allot_q
+    component "Allotment Consumer" as allot_cons
+    component "Query Available\nAllotment" as query_allot
+}
+
+package "CheckSlip System" <<CheckSlip>> {
+    queue "CheckSlip Queue" as check_q
+    component "CheckSlip Consumer" as check_cons
+    component "Checkslip Validator" as validation
+}
+
+database "Postgres\n\nDatabase" as db
+
+' --- Central Bus ---
+queue "Event Bus" as event_bus
+
+' --- Right Side: Chatbot & Integrations ---
+package "ChatBot System" <<ChatBot>> {
+    component "Conversation-Service" as conv_svc
+    component "Register / Unregister" as bot_reg
+    component "Mini App" as bot_app
+
+    component "ChatBot\n\nOrchestration Layer" as chatbot_orchestration
+    component "Triage" as triage
+    component "Slot Filling" as slot
+    component "Function Call" as func_call
+}
+
+package "Skills / Tools (Lambda)" <<Skills>> {
+    component "Booking Management" as skill_booking <<Lambda>>
+    component "Issue Management" as skill_issue <<Lambda>>
+    component "FAQ / Knowledge" as skill_faq <<Lambda>>
+    component "Random Fun Stuff" as skill_fun <<Lambda>>
+}
+
+' --- Core Logic (THE BIG CENTRAL HUB) ---
+rectangle "KaoJai\n\nCORE LOGIC" as kj_core <<Core>>
+
+' -- Open AI 3rd Party --
+rectangle "LLM Model" as llm_service <<AI>>
+
+component "LINE OA Collector\nFan Out" as line_oa
+
+' --- Bottom: Integrations & Notifications ---
+package "3rd Party Integrations / Plug-ins" <<Integration>> {
+    component "Bank System API" as bank_api
+    component "Service A" as service_a
+    component "Service B" as service_b
+    component "Service C" as service_c
+    component "Existed Legacy\nUser System" as legacy_sys
+}
+
+component "CheckSlip\nVerification Notifier" as check_notify
+queue "Result to Users" as result_store
+component "Alert & Notification" as alert #HotPink
+
+' -----------------------------
+' Layout pins (keep Users far-left)
+' -----------------------------
+users -[hidden]-> conv_svc
+line_msg  -[hidden]-> conv_svc
+
+users -[hidden]-> ops
+ops   -[hidden]-> alert
+
+' --- Relationships ---
+
+' Auth Dependencies
+admin_ui ..> auth
+issue_console ..> auth
+chat_console ..> auth
+
+' Ingest Flow
+users --> line_msg
+users --> fb_msg
+users --> ig_msg
+users --> fwd
+
+imap --> pubsub
+fwd --> pubsub
+line_msg --> pubsub
+
+chatbot_orchestration --> skill_booking
+chatbot_orchestration --> skill_issue
+chatbot_orchestration --> skill_faq
+chatbot_orchestration --> skill_fun
+
+' Skills Logic
+skill_booking --> query_allot : Check Availability
+skill_booking <--> kj_core
+skill_issue <--> db : Manage Issues
+skill_issue <--> kj_core
+
+' Ops Flow (merged Admin + Tenant Agent)
+ops --> chat_console
+chat_console --> queue_send_msg
+queue_send_msg --> msg_worker
+msg_worker --> line_msg
+msg_worker --> fb_msg
+msg_worker --> ig_msg
+
+ops --> issue_console
+issue_console --> db
+issue_console ..> queue_send_msg : Notify Status Update
+
+ops --> admin_ui
+admin_ui --> db
+
+' PubSub Distribution
+pubsub --> allot_q
+pubsub --> check_q
+
+' Booking Flow
+allot_q --> allot_cons
+allot_cons --> db
+allot_cons --> query_allot : check
+query_allot <--> db
+
+' CheckSlip Flow
+check_q --> check_cons
+check_cons --> validation
+validation --> db
+validation --> bank_api : External Call
+validation --> service_a
+validation --> service_b
+validation --> service_c
+
+
+' KAOJAI CORE CENTRAL CONNECTIONS (Bidirectional)
+kj_core <--> conv_svc : ChatBot
+kj_core <--> check_valid : CheckSlip
+kj_core <--> query_allot : Booking
+kj_core <--> ai_engine : AI Foundation
+kj_core <--> db
+kj_core ..> alert
+
+' Event Bus Connectivity
+query_allot --> event_bus
+db --> event_bus
+bot_reg --> event_bus
+bot_app --> event_bus
+line_oa --> event_bus
+event_bus --> result_store
+event_bus --> check_notify
+
+' AI Interaction
+ai_train -[hidden]-> ai_engine
+ai_tune -[hidden]-> ai_engine
+ai_rag -[hidden]-> ai_engine
+ai_engine --> bot_app : Provides Intelligence
+ai_engine .> llm_service : Part of Foundation
+
+' External Interactions (was Users (Adhoc))
+users --> line_oa : "When is earliest slot?"
+line_oa --> legacy_sys
+
+' Notifications
+check_notify --> alert : Success/Fail
+alert --> users : Notify User
+
+' Error Handling
+validation ..> check_notify : Bad Slip Logic
+
+' Logs & Monitoring
+msg_worker ..> logs_shipper
+skill_booking ..> logs_shipper
+skill_issue ..> logs_shipper
+logs_shipper --> logs_storage
+logs_storage --> monitoring_dashboard
+
+' S3 & Image Server
+users --> s3 : Upload/View
+img_server -- s3
+
+@enduml
