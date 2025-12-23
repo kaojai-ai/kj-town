@@ -1,7 +1,7 @@
 # KJ-Town
 
-![KJ Town](./kj-town.png)
-![KJ Town Gemini](./kj-town-gemini.png)
+![KJ Town](/docs/images/kj-town.png)
+![KJ Town Gemini](/docs/images/kj-town-gemini.png)
 
 i want to build a quick fancy interactive 3d environment that can be played on web.
 Try utilize Three.js library, WebGL Technology.

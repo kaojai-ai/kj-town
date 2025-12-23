@@ -1,7 +1,7 @@
 {
   "name": "kj-town",
   "version": "1.0.0",
-  "description": "![KJ Town](./kj-town.png) ![KJ Town Gemini](./kj-town-gemini.png)",
+  "description": "![KJ Town](./docs/images/kj-town.png) ![KJ Town Gemini](./docs/images/kj-town-gemini.png)",
   "main": "main.js",
   "scripts": {
     "dev": "vite",
