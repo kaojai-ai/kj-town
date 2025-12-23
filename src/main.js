@@ -1,9 +1,6 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { CSS2DRenderer } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
-import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
-import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
-import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
 import { CityBuilder } from './CityBuilder.js';
 
 // --- Scene Setup ---
@@ -80,16 +77,6 @@ dirLight.shadow.camera.near = 0.5;
 dirLight.shadow.camera.far = 2000;
 scene.add(dirLight);
 
-// --- Post-Processing ---
-const renderScene = new RenderPass(scene, camera);
-const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.5, 0.4, 0.85);
-bloomPass.threshold = 0.2; // Trigger on bright surfaces
-bloomPass.strength = 0.4; // Subtle glow
-bloomPass.radius = 0.3;
-
-const composer = new EffectComposer(renderer);
-composer.addPass(renderScene);
-composer.addPass(bloomPass);
 
 // --- City Generation ---
 const cityBuilder = new CityBuilder(scene);
@@ -160,8 +147,7 @@ function animate() {
         document.body.style.cursor = 'default';
     }
 
-    // renderer.render(scene, camera); // Use composer instead
-    composer.render();
+    renderer.render(scene, camera);
     labelRenderer.render(scene, camera);
 }
 
@@ -177,7 +163,6 @@ window.addEventListener('resize', () => {
 
     camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight);
-    composer.setSize(window.innerWidth, window.innerHeight);
     labelRenderer.setSize(window.innerWidth, window.innerHeight);
 });
 
