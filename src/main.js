@@ -146,4 +146,24 @@ window.addEventListener('resize', () => {
     labelRenderer.setSize(window.innerWidth, window.innerHeight);
 });
 
+// Fetch GitHub Stars
+fetch('https://api.github.com/repos/kaojai-ai/kj-town')
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
+    .then(data => {
+        const starCount = data.stargazers_count;
+        const starElement = document.getElementById('star-count');
+        if (starElement) {
+            starElement.textContent = starCount.toLocaleString();
+        }
+    })
+    .catch(error => {
+        console.error('Error fetching GitHub stars:', error);
+        // Optionally handle error, e.g., hide the star count or show 'N/A'
+    });
+
 animate();
