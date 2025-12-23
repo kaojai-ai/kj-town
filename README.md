@@ -22,7 +22,7 @@ Basically, the more you work, the more developed this virtual town becomes!
 
 ## Live Demo
 
-Visit the KJ-Town here: [https://kj-town.onrender.com/](https://kj-town.onrender.com/)
+Visit the KJ-Town here: [https://kj-town.kaojai.ai/](https://kj-town.kaojai.ai/)
 
 If you like this product, please share, star, and spread the word!
 
