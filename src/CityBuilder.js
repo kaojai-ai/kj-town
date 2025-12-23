@@ -179,43 +179,77 @@ export class CityBuilder {
         podium.position.y = 10;
         podium.receiveShadow = true;
 
-        // Main Head Shape (Voxel Style)
-        const headW = 120, headH = 100, headD = 90;
-        const bodyGeo = new THREE.BoxGeometry(headW, headH, headD);
-        const body = new THREE.Mesh(bodyGeo, this.materials.kaojaiBody);
-        body.position.y = 20 + headH/2;
+        // --- Logo Shape Construction ---
+        // Chat bubble with tail
+        const shape = new THREE.Shape();
+        const w = 140;
+        const h = 100;
+        const r = 20;
+
+        // Start top left
+        shape.moveTo(-w/2 + r, h/2);
+        shape.lineTo(w/2 - r, h/2);
+        shape.quadraticCurveTo(w/2, h/2, w/2, h/2 - r);
+        shape.lineTo(w/2, -h/2 + r);
+        shape.quadraticCurveTo(w/2, -h/2, w/2 - r, -h/2);
+
+        // Bottom edge to tail start
+        const tailW = 20;
+        const tailH = 20;
+        shape.lineTo(-w/2 + r + tailW + 30, -h/2);
+
+        // Tail
+        shape.lineTo(-w/2 + r, -h/2 - tailH); // Tip of tail
+        shape.lineTo(-w/2 + r, -h/2); // Back to box
+
+        shape.quadraticCurveTo(-w/2, -h/2, -w/2, -h/2 + r);
+        shape.lineTo(-w/2, h/2 - r);
+        shape.quadraticCurveTo(-w/2, h/2, -w/2 + r, h/2);
+
+        // Extrude
+        const depth = 60;
+        const extrudeSettings = { depth: depth, bevelEnabled: true, bevelSegments: 2, bevelSize: 2, bevelThickness: 2 };
+        const geometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
+        geometry.center(); // Center local coords
+
+        const body = new THREE.Mesh(geometry, this.materials.kaojaiBody);
+        body.position.y = 20 + h/2 + 10; // Elevate
         body.castShadow = true;
 
-        // Face Screen (Inset)
-        const faceGeo = new THREE.BoxGeometry(headW - 20, headH - 40, 5);
-        const face = new THREE.Mesh(faceGeo, this.materials.kaojaiFace);
-        face.position.set(0, body.position.y, headD/2 + 2);
+        // --- Features (White) ---
+        const featureMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.2 });
 
-        // Eyes (Pixel/Voxel Eyes)
-        const eyeSize = 18;
-        const eyeGeo = new THREE.BoxGeometry(eyeSize, eyeSize, 5);
-        const eyeMat = new THREE.MeshLambertMaterial({ color: 0x00ffff, emissive: 0x00ffff, emissiveIntensity: 0.8 });
+        // Eyes (Circles)
+        const eyeR = 15;
+        const eyeGeo = new THREE.CylinderGeometry(eyeR, eyeR, 5, 32);
+        eyeGeo.rotateX(Math.PI / 2); // Face forward
 
-        const eyeL = new THREE.Mesh(eyeGeo, eyeMat);
-        eyeL.position.set(-25, body.position.y + 10, headD/2 + 4);
-        const eyeR = new THREE.Mesh(eyeGeo, eyeMat);
-        eyeR.position.set(25, body.position.y + 10, headD/2 + 4);
+        const eyeL = new THREE.Mesh(eyeGeo, featureMat);
+        eyeL.position.set(-30, body.position.y + 10, depth/2 + 2);
 
-        // Ears / Antennae Panels
-        const earGeo = new THREE.BoxGeometry(10, 60, 60);
-        const earL = new THREE.Mesh(earGeo, this.materials.kaojaiEars);
-        earL.position.set(-(headW/2 + 5), body.position.y, 0);
+        const eyeR_mesh = new THREE.Mesh(eyeGeo, featureMat); // variable rename to avoid conflict
+        eyeR_mesh.position.set(30, body.position.y + 10, depth/2 + 2);
 
-        const earR = new THREE.Mesh(earGeo, this.materials.kaojaiEars);
-        earR.position.set((headW/2 + 5), body.position.y, 0);
+        // Mouth (Smile)
+        const mouthR = 25;
+        const mouthTube = 3;
+        const mouthGeo = new THREE.TorusGeometry(mouthR, mouthTube, 8, 32, Math.PI); // Half circle
+        const mouth = new THREE.Mesh(mouthGeo, featureMat);
+        mouth.position.set(0, body.position.y - 10, depth/2 + 2);
+        mouth.rotation.z = Math.PI; // Face up? No, default torus is XY plane.
+        // Torus is in XY plane around Z axis. We need it on XY plane, open upwards.
+        // Default 0 to PI is upper half. We need lower half.
+        // Rotation Z = PI makes it lower half.
 
-        // Top Antenna
-        const antStem = new THREE.Mesh(new THREE.CylinderGeometry(2, 2, 30), this.materials.concrete);
-        antStem.position.set(0, body.position.y + headH/2 + 15, 0);
-        const antBall = new THREE.Mesh(new THREE.SphereGeometry(8), this.materials.kaojaiEars);
-        antBall.position.set(0, body.position.y + headH/2 + 30, 0);
+        // Antenna
+        const antStemH = 30;
+        const antStem = new THREE.Mesh(new THREE.CylinderGeometry(3, 3, antStemH), featureMat);
+        antStem.position.set(0, body.position.y + h/2 + antStemH/2, 0);
 
-        group.add(podium, body, face, eyeL, eyeR, earL, earR, antStem, antBall);
+        const antBall = new THREE.Mesh(new THREE.SphereGeometry(12), featureMat);
+        antBall.position.set(0, body.position.y + h/2 + antStemH + 8, 0);
+
+        group.add(podium, body, eyeL, eyeR_mesh, mouth, antStem, antBall);
         group.position.set(x, y, z);
 
         this.addLabel(group, "KAOJAI", 180);
