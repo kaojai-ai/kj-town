@@ -29,6 +29,16 @@ p {
     color: #ccc;
 }
 
+#info a {
+    color: white;
+    pointer-events: auto;
+    text-decoration: none;
+}
+
+#info a:hover {
+    text-decoration: underline;
+}
+
 /* Label styling if we use CSS2DRenderer */
 .label {
     color: #fff;
