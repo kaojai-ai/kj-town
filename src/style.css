@@ -17,6 +17,10 @@ body {
     z-index: 100;
 }
 
+#info p {
+    line-height: 1.5em;
+}
+
 h1 {
     margin: 0 0 5px 0;
     font-size: 1.5em;
@@ -104,4 +108,18 @@ p {
     border-radius: 4px;
     pointer-events: none;
     text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
+}
+
+@media (max-width: 768px) {
+    #github-badge {
+        top: auto;
+        right: auto;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+    }
+
+    #github-badge:hover {
+        transform: translateX(-50%) scale(1.05);
+    }
 }

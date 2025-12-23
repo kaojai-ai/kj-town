@@ -1,14 +1,22 @@
 # KJ Town
 
+Auto-generates a 3D town from your system architecture and microservices. Build. Ship. Watch the town evolve 🚀✨
+
 ![KJ Town](/docs/images/kj-town.png)
 
-## Concept
+## Live Demo
 
-KJ Town is a tool that automatically builds a 3D town based on your system architecture using WebGL technology.
+Visit the KJ-Town here: [https://kj-town.kaojai.ai/](https://kj-town.kaojai.ai/)
 
 ## Status
 
-The project is currently ongoing. 🚧
+🚧 Concept phase (WIP)
+
+Right now it’s **not fully automated yet** — we’re still shaping the pipeline that turns repo/architecture signals into a living 3D town.
+
+That said, with current tech, we believe this is **very deliverable soon**.
+
+Contributions welcome. If you think it’s cool let us know by starring this GitHub repo ⭐️🙌
 
 ## How does it work?
 
@@ -16,15 +24,11 @@ There will be a service that watches changes in your git repository organization
 
 Basically, the more you work, the more developed this virtual town becomes!
 
-## Live Demo
-
-Visit the KJ-Town here: [https://kj-town.kaojai.ai/](https://kj-town.kaojai.ai/)
-
-If you like this product, please share, star, and spread the word!
-
 ## Support Us
 
-You can support our SaaS: **[KaoJai.ai](https://kaojai.ai)** - Your business sidekick — built to blend.
+If you like this product, please share 💬, star ⭐, and spread the word 🌍!
+
+You can also support our SaaS: **[KaoJai.ai](https://kaojai.ai)** - Your business sidekick — built to blend.
 
 We use AI to solve business problems fast, accurately, and at a super competitive price!
 
