@@ -1,7 +1,6 @@
 # KJ Town
 
 ![KJ Town](/docs/images/kj-town.png)
-![KJ Town Gemini](/docs/images/kj-town-gemini.png)
 
 ## Concept
 
@@ -30,4 +29,5 @@ If you like this product, please share, star, and spread the word!
 ## Support Us
 
 You can support our SaaS: **[KaoJai.ai](https://kaojai.ai)** - Your business sidekick — built to blend.
+
 We use AI to solve business problems fast, accurately, and at a super competitive price!
