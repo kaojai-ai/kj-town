@@ -231,15 +231,25 @@ export class CityBuilder {
         eyeR_mesh.position.set(30, body.position.y + 10, depth/2 + 2);
 
         // Mouth (Smile)
-        const mouthR = 25;
+        // Mouth (Smile) - Styled as lower path of an oval
+        const mouthCurve = new THREE.EllipseCurve(
+            0, 0,            // ax, ay
+            26, 16,          // xRadius, yRadius
+            Math.PI * 1.2,   // aStartAngle
+            Math.PI * 1.8,   // aEndAngle
+            false,           // aClockwise
+            0                // aRotation
+        );
+
+        const mouthPoints = mouthCurve.getPoints(50);
+        const mouthPath3D = new THREE.CatmullRomCurve3(
+            mouthPoints.map(p => new THREE.Vector3(p.x, p.y, 0))
+        );
+
         const mouthTube = 3;
-        const mouthGeo = new THREE.TorusGeometry(mouthR, mouthTube, 8, 32, Math.PI); // Half circle
+        const mouthGeo = new THREE.TubeGeometry(mouthPath3D, 20, mouthTube, 8, false);
         const mouth = new THREE.Mesh(mouthGeo, featureMat);
-        mouth.position.set(0, body.position.y - 10, depth/2 + 2);
-        mouth.rotation.z = Math.PI; // Face up? No, default torus is XY plane.
-        // Torus is in XY plane around Z axis. We need it on XY plane, open upwards.
-        // Default 0 to PI is upper half. We need lower half.
-        // Rotation Z = PI makes it lower half.
+        mouth.position.set(0, body.position.y - 5, depth/2 + 2);
 
         // Antenna
         const antStemH = 30;
@@ -252,7 +262,7 @@ export class CityBuilder {
         group.add(podium, body, eyeL, eyeR_mesh, mouth, antStem, antBall);
         group.position.set(x, y, z);
 
-        this.addLabel(group, "KAOJAI", 180);
+        this.addLabel(group, "KaoJai.ai", 180);
         group.userData = { isBuilding: true, name: "KAOJAI Core" };
         this.scene.add(group);
     }
