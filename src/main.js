@@ -1,24 +1,41 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { CSS2DRenderer } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
 import { CityBuilder } from './CityBuilder.js';
 
 // --- Scene Setup ---
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x87CEEB); // Sky Blue
-// scene.fog = new THREE.Fog(0x87CEEB, 200, 2000); // Soft fog
+const skyColor = 0x87CEEB;
+scene.background = new THREE.Color(skyColor);
+scene.fog = new THREE.Fog(skyColor, 500, 2000); // Atmospheric depth
 
-const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 10000);
-camera.position.set(0, 400, 800); // Frontal view slightly elevated
+// --- Camera (Isometric) ---
+const aspect = window.innerWidth / window.innerHeight;
+const frustumSize = 1000;
+const camera = new THREE.OrthographicCamera(
+    frustumSize * aspect / -2,
+    frustumSize * aspect / 2,
+    frustumSize / 2,
+    frustumSize / -2,
+    1,
+    5000
+);
+// Isometric angle: Look from a corner
+camera.position.set(500, 500, 500);
 camera.lookAt(0, 0, 0);
+camera.zoom = 1.2;
+camera.updateProjectionMatrix();
 
-const renderer = new THREE.WebGLRenderer({ antialias: true });
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.setPixelRatio(window.devicePixelRatio);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); // Cap pixel ratio for perf
 renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap; // Softer shadows
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.0;
+renderer.toneMappingExposure = 1.1;
 document.body.appendChild(renderer.domElement);
 
 const labelRenderer = new CSS2DRenderer();
@@ -31,33 +48,48 @@ document.body.appendChild(labelRenderer.domElement);
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
 controls.dampingFactor = 0.05;
-controls.maxPolarAngle = Math.PI / 2 - 0.05; // Don't go below ground
-controls.minDistance = 100;
-controls.maxDistance = 2000;
-controls.autoRotate = false; // Disable auto rotate for user to inspect details
+controls.enableZoom = true;
+controls.maxPolarAngle = Math.PI / 2; // Prevent going under ground
+controls.autoRotate = false;
 
-// --- Lighting (Sunny Day) ---
-const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+// --- Lighting ---
+// Ambient for base visibility
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
 scene.add(ambientLight);
 
-const dirLight = new THREE.DirectionalLight(0xffffff, 1.2);
-dirLight.position.set(300, 800, 500);
+// Hemisphere for nice gradient (Sky vs Ground reflection)
+const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 0.5);
+hemiLight.position.set(0, 500, 0);
+scene.add(hemiLight);
+
+// Directional Sun (Key Light)
+const dirLight = new THREE.DirectionalLight(0xffffff, 1.0);
+dirLight.position.set(-300, 500, 200); // Light coming from top-left-ish
 dirLight.castShadow = true;
+// High res shadow map
 dirLight.shadow.mapSize.width = 2048;
 dirLight.shadow.mapSize.height = 2048;
-dirLight.shadow.camera.near = 0.5;
-dirLight.shadow.camera.far = 3000;
-const d = 1000;
+dirLight.shadow.bias = -0.0005;
+// Fit shadow camera to scene
+const d = 800;
 dirLight.shadow.camera.left = -d;
 dirLight.shadow.camera.right = d;
 dirLight.shadow.camera.top = d;
 dirLight.shadow.camera.bottom = -d;
+dirLight.shadow.camera.near = 0.5;
+dirLight.shadow.camera.far = 2000;
 scene.add(dirLight);
 
-const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 0.6);
-hemiLight.position.set(0, 200, 0);
-scene.add(hemiLight);
+// --- Post-Processing ---
+const renderScene = new RenderPass(scene, camera);
+const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.5, 0.4, 0.85);
+bloomPass.threshold = 0.2; // Trigger on bright surfaces
+bloomPass.strength = 0.4; // Subtle glow
+bloomPass.radius = 0.3;
 
+const composer = new EffectComposer(renderer);
+composer.addPass(renderScene);
+composer.addPass(bloomPass);
 
 // --- City Generation ---
 const cityBuilder = new CityBuilder(scene);
@@ -67,22 +99,23 @@ cityBuilder.build();
 // --- Interaction ---
 const raycaster = new THREE.Raycaster();
 const mouse = new THREE.Vector2();
-let INTERSECTED;
 
-// Create tooltip
 const tooltip = document.createElement('div');
 tooltip.id = 'tooltip';
-tooltip.style.position = 'absolute';
-tooltip.style.background = 'rgba(255, 255, 255, 0.9)';
-tooltip.style.color = '#000';
-tooltip.style.padding = '10px';
-tooltip.style.borderRadius = '8px';
-tooltip.style.pointerEvents = 'none';
-tooltip.style.display = 'none';
-tooltip.style.border = '1px solid #ccc';
-tooltip.style.fontFamily = 'sans-serif';
-tooltip.style.zIndex = '1000';
-tooltip.style.boxShadow = '0 4px 6px rgba(0,0,0,0.1)';
+Object.assign(tooltip.style, {
+    position: 'absolute',
+    background: 'rgba(255, 255, 255, 0.95)',
+    color: '#333',
+    padding: '8px 12px',
+    borderRadius: '6px',
+    pointerEvents: 'none',
+    display: 'none',
+    border: '1px solid #ddd',
+    fontFamily: 'Segoe UI, sans-serif',
+    fontSize: '13px',
+    zIndex: '1000',
+    boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+});
 document.body.appendChild(tooltip);
 
 function onPointerMove( event ) {
@@ -93,28 +126,21 @@ function onPointerMove( event ) {
     tooltip.style.top = event.clientY + 15 + 'px';
 }
 
-function onClick(event) {
-    // Interaction logic
-}
-
 window.addEventListener( 'pointermove', onPointerMove );
-window.addEventListener( 'mousedown', onClick );
-
 
 // --- Animation Loop ---
 function animate() {
     requestAnimationFrame(animate);
 
-    cityBuilder.update(); // Update particles
+    cityBuilder.update();
     controls.update();
 
     // Raycasting
     raycaster.setFromCamera( mouse, camera );
-    const intersects = raycaster.intersectObjects( scene.children, true ); // Recursive for Groups
+    const intersects = raycaster.intersectObjects( scene.children, true );
 
+    let target = null;
     if ( intersects.length > 0 ) {
-        let target = null;
-        // Traverse up to find the root group with userData
         let obj = intersects[0].object;
         while(obj) {
             if(obj.userData && obj.userData.isBuilding) {
@@ -123,47 +149,36 @@ function animate() {
             }
             obj = obj.parent;
         }
-
-        if ( target ) {
-             tooltip.style.display = 'block';
-             tooltip.innerHTML = `<strong>${target.userData.name}</strong><br>Status: Online`;
-        } else {
-            tooltip.style.display = 'none';
-        }
-    } else {
-        tooltip.style.display = 'none';
     }
 
-    renderer.render(scene, camera);
+    if ( target ) {
+         tooltip.style.display = 'block';
+         tooltip.innerHTML = `<strong>${target.userData.name}</strong>`;
+         document.body.style.cursor = 'pointer';
+    } else {
+        tooltip.style.display = 'none';
+        document.body.style.cursor = 'default';
+    }
+
+    // renderer.render(scene, camera); // Use composer instead
+    composer.render();
     labelRenderer.render(scene, camera);
 }
 
 // --- Resize Handling ---
 window.addEventListener('resize', () => {
-    camera.aspect = window.innerWidth / window.innerHeight;
+    const aspect = window.innerWidth / window.innerHeight;
+
+    // Update orthographic frustum
+    camera.left = -frustumSize * aspect / 2;
+    camera.right = frustumSize * aspect / 2;
+    camera.top = frustumSize / 2;
+    camera.bottom = -frustumSize / 2;
+
     camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight);
+    composer.setSize(window.innerWidth, window.innerHeight);
     labelRenderer.setSize(window.innerWidth, window.innerHeight);
 });
-
-// Fetch GitHub Stars
-fetch('https://api.github.com/repos/kaojai-ai/kj-town')
-    .then(response => {
-        if (!response.ok) {
-            throw new Error('Network response was not ok');
-        }
-        return response.json();
-    })
-    .then(data => {
-        const starCount = data.stargazers_count;
-        const starElement = document.getElementById('star-count');
-        if (starElement) {
-            starElement.textContent = starCount.toLocaleString();
-        }
-    })
-    .catch(error => {
-        console.error('Error fetching GitHub stars:', error);
-        // Optionally handle error, e.g., hide the star count or show 'N/A'
-    });
 
 animate();
