@@ -1,0 +1,42 @@
+name: Sync Changelog
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 3 * * *"
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  sync_changelog:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout kj-public
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Checkout changelog source
+        uses: actions/checkout@v4
+        with:
+          repository: kaojai-ai/kj-public-changelog
+          path: changelog-source
+          token: ${{ secrets.CHANGELOG_REPO_TOKEN || secrets.GITHUB_TOKEN }}
+
+      - name: Sync changelog directory
+        run: |
+          rsync -av --delete --exclude ".git" changelog-source/ changelog/
+
+      - name: Commit changelog changes
+        run: |
+          if git status --porcelain | grep .; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add changelog
+            git commit -m "chore: sync changelog"
+            git push
+          else
+            echo "No changelog updates to commit."
+          fi
