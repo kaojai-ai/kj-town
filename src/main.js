@@ -1,17 +1,22 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { CSS2DRenderer } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
+import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
 import { CityBuilder } from './CityBuilder.js';
 
 // --- Scene Setup ---
 const scene = new THREE.Scene();
-const skyColor = 0x87CEEB;
+const skyColor = 0xbbeeff; // Slightly bluer sky
 scene.background = new THREE.Color(skyColor);
-scene.fog = new THREE.Fog(skyColor, 500, 2000); // Atmospheric depth
+// FogExp2 for smoother fade, matching sky
+scene.fog = new THREE.FogExp2(skyColor, 0.0012);
 
 // --- Camera (Isometric) ---
 const aspect = window.innerWidth / window.innerHeight;
-const frustumSize = 1000;
+const frustumSize = 900; // Slightly tighter
 const camera = new THREE.OrthographicCamera(
     frustumSize * aspect / -2,
     frustumSize * aspect / 2,
@@ -23,16 +28,16 @@ const camera = new THREE.OrthographicCamera(
 // Isometric angle: Look from a corner
 camera.position.set(500, 500, 500);
 camera.lookAt(0, 0, 0);
-camera.zoom = 1.2;
+camera.zoom = 1.8;
 camera.updateProjectionMatrix();
 
-const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+const renderer = new THREE.WebGLRenderer({ antialias: false, alpha: true }); // Antialias false for PostProcessing usually
 renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); // Cap pixel ratio for perf
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.PCFSoftShadowMap; // Softer shadows
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.1;
+renderer.toneMappingExposure = 1.0;
 document.body.appendChild(renderer.domElement);
 
 const labelRenderer = new CSS2DRenderer();
@@ -42,41 +47,52 @@ labelRenderer.domElement.style.top = '0px';
 labelRenderer.domElement.style.pointerEvents = 'none';
 document.body.appendChild(labelRenderer.domElement);
 
-const controls = new OrbitControls(camera, renderer.domElement);
+const controls = new OrbitControls(camera, labelRenderer.domElement); // Control on labelRenderer to allow pass-through
 controls.enableDamping = true;
 controls.dampingFactor = 0.05;
 controls.enableZoom = true;
-controls.maxPolarAngle = Math.PI / 2; // Prevent going under ground
+controls.maxPolarAngle = Math.PI / 2;
 controls.autoRotate = false;
 
 // --- Lighting ---
-// Ambient for base visibility
-const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+// Ambient: Cool blue tint for shadows
+const ambientLight = new THREE.AmbientLight(0xddeeff, 0.5);
 scene.add(ambientLight);
 
-// Hemisphere for nice gradient (Sky vs Ground reflection)
-const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 0.5);
+// Hemisphere: Sky vs Ground
+const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 0.4);
 hemiLight.position.set(0, 500, 0);
 scene.add(hemiLight);
 
-// Directional Sun (Key Light)
-const dirLight = new THREE.DirectionalLight(0xffffff, 1.0);
-dirLight.position.set(-300, 500, 200); // Light coming from top-left-ish
+// Directional Sun (Warm)
+const dirLight = new THREE.DirectionalLight(0xffffee, 1.2);
+dirLight.position.set(100, 300, 150);
 dirLight.castShadow = true;
-// High res shadow map
 dirLight.shadow.mapSize.width = 2048;
 dirLight.shadow.mapSize.height = 2048;
-dirLight.shadow.bias = -0.0005;
-// Fit shadow camera to scene
-const d = 800;
+dirLight.shadow.bias = -0.0001;
+const d = 1000;
 dirLight.shadow.camera.left = -d;
 dirLight.shadow.camera.right = d;
 dirLight.shadow.camera.top = d;
 dirLight.shadow.camera.bottom = -d;
-dirLight.shadow.camera.near = 0.5;
-dirLight.shadow.camera.far = 2000;
 scene.add(dirLight);
 
+// --- Post Processing ---
+const composer = new EffectComposer(renderer);
+
+const renderPass = new RenderPass(scene, camera);
+composer.addPass(renderPass);
+
+// Bloom: Threshold high to only catch neon/white, Strength subtle
+const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.5, 0.4, 0.85);
+bloomPass.threshold = 0.85; // Only very bright things glow
+bloomPass.strength = 0.4;
+bloomPass.radius = 0.5;
+composer.addPass(bloomPass);
+
+const outputPass = new OutputPass();
+composer.addPass(outputPass);
 
 // --- City Generation ---
 const cityBuilder = new CityBuilder(scene);
@@ -147,7 +163,8 @@ function animate() {
         document.body.style.cursor = 'default';
     }
 
-    renderer.render(scene, camera);
+    // Use composer instead of renderer
+    composer.render();
     labelRenderer.render(scene, camera);
 }
 
@@ -163,6 +180,7 @@ window.addEventListener('resize', () => {
 
     camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight);
+    composer.setSize(window.innerWidth, window.innerHeight); // Update composer
     labelRenderer.setSize(window.innerWidth, window.innerHeight);
 });
 
