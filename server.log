@@ -1,13 +1,18 @@
 
-> kj-town@1.0.0 dev /app
+> kj-town@1.0.0 dev
 > vite
 
 
-  VITE v7.3.0  ready in 343 ms
+  VITE v7.3.0  ready in 1224 ms
 
   ➜  Local:   http://localhost:5173/
   ➜  Network: use --host to expose
-2:02:06 PM [vite] (client) page reload main.js
-2:02:11 PM [vite] (client) page reload main.js
-2:02:20 PM [vite] (client) page reload main.js
-2:08:03 PM [vite] (client) page reload CityBuilder.js
+8:07:13 PM [vite] (client) page reload main.js
+8:08:15 PM [vite] (client) page reload CityBuilder.js
+8:09:28 PM [vite] (client) page reload CityBuilder.js
+8:10:09 PM [vite] (client) page reload CityBuilder.js
+8:10:52 PM [vite] (client) page reload main.js
+8:10:56 PM [vite] (client) ✨ new dependencies optimized: three/examples/jsm/postprocessing/EffectComposer.js, three/examples/jsm/postprocessing/RenderPass.js, three/examples/jsm/postprocessing/UnrealBloomPass.js, three/examples/jsm/postprocessing/OutputPass.js
+8:10:56 PM [vite] (client) ✨ optimized dependencies changed. reloading
+8:11:23 PM [vite] (client) page reload CityBuilder.js
+8:11:33 PM [vite] (client) page reload CityBuilder.js
