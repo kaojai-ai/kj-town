@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "auto:upgrade": "node ./scripts/auto-upgrade-town.mjs"
   },
   "keywords": [],
   "author": "",

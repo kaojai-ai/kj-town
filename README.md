@@ -24,6 +24,28 @@ There will be a service that watches changes in your git repository organization
 
 Basically, the more you work, the more developed this virtual town becomes!
 
+## Automated upgrade script
+
+You can run an automation script that:
+1. Reads your business + architecture file (`.md` or `.puml`)
+2. Reads a public page URL that contains incremental system changes
+3. Uses OpenAI Codex (`gpt-5-codex` by default, override via env/flag) to evolve `src/` as an incremental city/empire
+
+Command:
+
+```bash
+OPENAI_API_KEY=your_key \
+npm run auto:upgrade -- \
+  --context ./fixtures/blueprint.puml \
+  --changes-url https://example.com/changelog
+```
+
+Useful flags:
+- `--dry-run` prints model output JSON without writing files
+- `--model gpt-5-codex` overrides model
+- `--max-context-chars 12000` limits architecture/context input size
+- `--max-change-chars 12000` limits fetched change-page text size
+
 ## Support Us
 
 If you like this product, please share 💬, star ⭐, and spread the word 🌍!
