@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { CSS2DRenderer } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
-import { CityBuilder } from './CityBuilder.js';
+import { CityBuilder } from './CityBuilder';
 
 // --- Scene Setup ---
 const scene = new THREE.Scene();
@@ -105,7 +105,7 @@ Object.assign(tooltip.style, {
 });
 document.body.appendChild(tooltip);
 
-function onPointerMove( event ) {
+function onPointerMove(event: PointerEvent) {
 	mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
 	mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
 
@@ -126,7 +126,7 @@ function animate() {
     raycaster.setFromCamera( mouse, camera );
     const intersects = raycaster.intersectObjects( scene.children, true );
 
-    let target = null;
+    let target: THREE.Object3D | null = null;
     if ( intersects.length > 0 ) {
         let obj = intersects[0].object;
         while(obj) {

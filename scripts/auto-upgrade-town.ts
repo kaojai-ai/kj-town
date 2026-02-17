@@ -5,8 +5,30 @@ const PROJECT_ROOT = process.cwd();
 const SRC_DIR = path.join(PROJECT_ROOT, "src");
 const ALLOWED_CONTEXT_EXT = new Set([".md", ".markdown", ".puml", ".txt"]);
 
-function parseArgs(argv) {
-  const result = {
+type CliArgs = {
+  contextFile?: string;
+  changesUrl?: string;
+  dryRun: boolean;
+  model: string;
+  maxContextChars: number;
+  maxChangeChars: number;
+  help?: boolean;
+};
+
+type ModelFileUpdate = {
+  path: string;
+  why?: string;
+  content: string;
+};
+
+type ModelResponse = {
+  change_log?: string;
+  files: ModelFileUpdate[];
+  next_evolution_hook?: string;
+};
+
+function parseArgs(argv: string[]): CliArgs {
+  const result: CliArgs = {
     dryRun: false,
     model: process.env.OPENAI_CODEX_MODEL || "gpt-5-codex",
     maxContextChars: 12000,
@@ -53,7 +75,7 @@ function parseArgs(argv) {
   return result;
 }
 
-function usage() {
+function usage(): string {
   return [
     "Usage:",
     "  npm run auto:upgrade -- --context <file.md|file.puml> --changes-url <https://...> [--model gpt-5-codex] [--dry-run]",
@@ -66,7 +88,7 @@ function usage() {
   ].join("\n");
 }
 
-function stripHtml(html) {
+function stripHtml(html: string): string {
   return html
     .replace(/<script[\s\S]*?<\/script>/gi, " ")
     .replace(/<style[\s\S]*?<\/style>/gi, " ")
@@ -82,7 +104,7 @@ function stripHtml(html) {
     .trim();
 }
 
-async function listSrcFiles(dir) {
+async function listSrcFiles(dir: string): Promise<string[]> {
   const entries = await fs.readdir(dir, { withFileTypes: true });
   const files = [];
 
@@ -102,13 +124,21 @@ async function listSrcFiles(dir) {
   return files;
 }
 
-function withinSrc(targetPath) {
+function withinSrc(targetPath: string): boolean {
   const normalized = path.resolve(PROJECT_ROOT, targetPath);
   const relative = path.relative(SRC_DIR, normalized);
   return !relative.startsWith("..") && !path.isAbsolute(relative);
 }
 
-function buildPrompt({ contextContent, changeText, srcSnapshot }) {
+function buildPrompt({
+  contextContent,
+  changeText,
+  srcSnapshot,
+}: {
+  contextContent: string;
+  changeText: string;
+  srcSnapshot: string;
+}): string {
   return `
 You are OpenAI Codex GPT-5.3 acting as the Imperial City Architect for KJ Town.
 
@@ -251,7 +281,7 @@ async function main() {
     return;
   }
 
-  const payload = await response.json();
+  const payload = (await response.json()) as { output_text?: string };
   const modelText = payload.output_text;
 
   if (!modelText) {
@@ -260,14 +290,14 @@ async function main() {
     return;
   }
 
-  let parsed;
+  let parsed: ModelResponse;
   try {
-    parsed = JSON.parse(modelText);
+    parsed = JSON.parse(modelText) as ModelResponse;
   } catch {
     const start = modelText.indexOf("{");
     const end = modelText.lastIndexOf("}");
     if (start >= 0 && end > start) {
-      parsed = JSON.parse(modelText.slice(start, end + 1));
+      parsed = JSON.parse(modelText.slice(start, end + 1)) as ModelResponse;
     } else {
       console.error("Could not parse model JSON response.");
       console.error(modelText);
@@ -311,7 +341,7 @@ async function main() {
   }
 }
 
-main().catch((err) => {
+main().catch((err: unknown) => {
   console.error("Automation script failed.");
   console.error(err);
   process.exitCode = 1;

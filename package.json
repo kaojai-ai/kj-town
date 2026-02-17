@@ -1,13 +1,14 @@
 {
   "name": "kj-town",
   "version": "1.0.0",
-  "description": "![KJ Town](./docs/images/kj-town.png) ![KJ Town Gemini](./docs/images/kj-town-gemini.png)",
-  "main": "main.js",
+  "description": "Auto-generates a 3D town from your system architecture and microservices. Build. Ship. Watch the town evolve 🚀✨",
+  "main": "src/main.ts",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "auto:upgrade": "node ./scripts/auto-upgrade-town.mjs"
+    "typecheck": "tsc --noEmit",
+    "auto:upgrade": "tsx ./scripts/auto-upgrade-town.ts"
   },
   "keywords": [],
   "author": "",
@@ -17,5 +18,9 @@
     "dat.gui": "^0.7.9",
     "three": "^0.182.0",
     "vite": "^7.3.0"
+  },
+  "devDependencies": {
+    "tsx": "^4.20.5",
+    "typescript": "^5.9.2"
   }
 }
