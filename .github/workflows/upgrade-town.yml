@@ -11,7 +11,8 @@ permissions:
 jobs:
   upgrade-town:
     runs-on: ubuntu-latest
-
+    outputs:
+      final_message: ${{ steps.run_codex.outputs.final-message }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
@@ -37,10 +38,24 @@ jobs:
 
           url="https://blog.kaojai.ai/blog/${year}/${month}/changelog-${today}/llms.txt"
           target_dir="migrations/${year}"
-          target_file="${target_dir}/${epoch}_changelog-${today}.md"
+          tmp_file="$(mktemp)"
+          pattern="${target_dir}"/*_changelog-"${today}".md
 
           mkdir -p "${target_dir}"
-          curl -fsSL "${url}" -o "${target_file}"
+          curl -fsSL "${url}" -o "${tmp_file}"
+
+          shopt -s nullglob
+          for existing_file in ${pattern}; do
+            if cmp -s "${tmp_file}" "${existing_file}"; then
+              echo "Changelog content unchanged. Reusing ${existing_file}"
+              rm -f "${tmp_file}"
+              exit 0
+            fi
+          done
+          shopt -u nullglob
+
+          target_file="${target_dir}/${epoch}_changelog-${today}.md"
+          mv "${tmp_file}" "${target_file}"
           echo "Downloaded changelog to ${target_file}"
 
       - name: Run Codex migration upgrade
@@ -49,8 +64,6 @@ jobs:
         with:
           openai-api-key: ${{ secrets.OPENAI_API_KEY }}
           prompt-file: instructions/upgrade-town.md
-          sandbox: workspace-write
-          safety-strategy: drop-sudo
 
       - name: Build project
         run: npm run build
