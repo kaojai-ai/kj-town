@@ -1,0 +1,83 @@
+name: Upgrade Town With Codex
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '30 4 * * 2'
+
+permissions:
+  contents: write
+
+jobs:
+  upgrade-town:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Fetch latest changelog
+        shell: bash
+        run: |
+          year="$(date +%Y)"
+          month="$(date +%m)"
+          today="$(date +%F)"
+          epoch="$(date +%s)"
+
+          url="https://blog.kaojai.ai/blog/${year}/${month}/changelog-${today}/llms.txt"
+          target_dir="migrations/${year}"
+          target_file="${target_dir}/${epoch}_changelog-${today}.md"
+
+          mkdir -p "${target_dir}"
+          curl -fsSL "${url}" -o "${target_file}"
+          echo "Downloaded changelog to ${target_file}"
+
+      - name: Run Codex migration upgrade
+        id: run_codex
+        uses: openai/codex-action@v1
+        with:
+          openai-api-key: ${{ secrets.OPENAI_API_KEY }}
+          prompt-file: instructions/upgrade-town.md
+          model: gpt-5.3-codex
+          sandbox: workspace-write
+          safety-strategy: drop-sudo
+
+      - name: Build project
+        run: npm run build
+
+      - name: Run tests (or fallback to typecheck)
+        shell: bash
+        run: |
+          if npm run | grep -qE '^\s+test\b'; then
+            npm test
+          else
+            npm run typecheck
+          fi
+
+      - name: Commit and push changes
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if [[ -z "$(git status --porcelain)" ]]; then
+            echo "No changes detected after Codex run."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add -A
+          git commit -m "chore: apply town upgrades via Codex"
+          git push
