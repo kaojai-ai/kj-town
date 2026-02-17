@@ -58,6 +58,7 @@ WORKFLOW
      - Update graph connections
      - Modify entity behavior/visual state if needed
      - Restrcuture the whole town, make an improvement or upgrade to the current entity if it make the whole landscape look better and reflect the business context
+     - feel free to expand the land, restructure,  upgrade item, move thing around, but make it fall under physical laws
 7. Ensure TypeScript compiles
 8. After successful application of all migrations:
    - Write the highest epoch to /migrations/LAST_MIGRATE.md.
