@@ -22,8 +22,8 @@ MIGRATION RULES (STRICT)
 
 - Migration files must be named using an epoch timestamp prefix:
   Example:
-    1708123456-add-payment-service.md
-    1709123999-rename-auth-boundary.md
+    1708123456_add-payment-service.md
+    1709123999_rename-auth-boundary.md
 
 - The file /migrations/LAST_MIGRATE.md contains a single epoch number.
   This represents the last successfully applied migration.
