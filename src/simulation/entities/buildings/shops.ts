@@ -31,6 +31,28 @@ export function createShops(
         roof.position.y = height + 15;
 
         shopGroup.add(body, roof);
+
+        if (i === 0) {
+            const canopy = new THREE.Mesh(new THREE.BoxGeometry(width * 1.3, 6, depth * 0.6), materials.shopRoof2);
+            canopy.position.set(0, height + 8, depth * 0.2);
+            const dayViewPanel = new THREE.Mesh(new THREE.BoxGeometry(width * 1.1, 26, 4), materials.screenBlue);
+            dayViewPanel.position.set(0, height + 28, depth * 0.35);
+            const searchKiosk = new THREE.Mesh(new THREE.CylinderGeometry(6, 6, 18, 16), materials.partnerMetal);
+            searchKiosk.position.set(-width * 0.35, 9, depth * 0.4);
+            const lens = new THREE.Mesh(new THREE.TorusGeometry(7, 1.5, 8, 24), materials.screenBlue);
+            lens.rotation.x = Math.PI / 2;
+            lens.position.set(-width * 0.35, 20, depth * 0.4);
+            shopGroup.add(canopy, dayViewPanel, searchKiosk, lens);
+        }
+
+        if (i === 1) {
+            const galleryFrame = new THREE.Mesh(new THREE.BoxGeometry(width * 0.9, 22, 4), materials.screenAmber);
+            galleryFrame.position.set(0, height * 0.65, depth * 0.4);
+            const galleryBase = new THREE.Mesh(new THREE.BoxGeometry(width * 0.95, 4, 6), materials.partnerMetal);
+            galleryBase.position.set(0, height * 0.55, depth * 0.4);
+            shopGroup.add(galleryFrame, galleryBase);
+        }
+
         shopGroup.position.set((i - 1.5) * spacing, 0, 0);
         shopGroup.userData = { isBuilding: true, name: titles[i] };
 

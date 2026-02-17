@@ -26,6 +26,22 @@ export function createAILab(
         group.add(inner);
     }
 
+    const knowledgeSpines = new THREE.Group();
+    const spineGeo = new THREE.BoxGeometry(10, 50, 6);
+    for (let i = 0; i < 6; i++) {
+        const spine = new THREE.Mesh(spineGeo, materials.shopRoof2);
+        spine.position.set(-30 + i * 12, 35, -25);
+        knowledgeSpines.add(spine);
+    }
+    group.add(knowledgeSpines);
+
+    const assistantCore = new THREE.Mesh(new THREE.SphereGeometry(18, 24, 24), materials.screenBlue);
+    assistantCore.position.set(0, 90, 0);
+    const orbitRing = new THREE.Mesh(new THREE.TorusGeometry(35, 2, 12, 60), materials.partnerMetal);
+    orbitRing.rotation.x = Math.PI / 2;
+    orbitRing.position.set(0, 90, 0);
+    group.add(assistantCore, orbitRing);
+
     const frameGeo = new THREE.BoxGeometry(width + 4, 10, depth + 4);
     const base = new THREE.Mesh(frameGeo, materials.concrete);
     base.position.y = 5;

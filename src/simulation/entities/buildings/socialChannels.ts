@@ -25,6 +25,23 @@ export function createSocialChannels(
     instagram.position.set(gap, size / 2, 0);
     instagram.castShadow = true;
 
+    const accountStackGeo = new THREE.BoxGeometry(size * 0.55, size * 0.55, size * 0.55);
+    const accountOffsets = [
+        new THREE.Vector3(-gap, size + 10, -15),
+        new THREE.Vector3(-gap + 15, size + 35, 10),
+        new THREE.Vector3(0, size + 10, gap / 2 - 15),
+        new THREE.Vector3(15, size + 35, gap / 2 + 10),
+        new THREE.Vector3(gap, size + 10, -15),
+        new THREE.Vector3(gap - 15, size + 35, 10),
+    ];
+    const accountMats = [materials.lineGreen, materials.lineGreen, materials.fbBlue, materials.fbBlue, materials.instaPink, materials.instaPink];
+    accountOffsets.forEach((offset, index) => {
+        const node = new THREE.Mesh(accountStackGeo, accountMats[index]);
+        node.position.copy(offset);
+        node.castShadow = true;
+        group.add(node);
+    });
+
     group.add(line, facebook, instagram);
     group.position.set(x, y, z);
     group.userData = { isBuilding: true, name: 'Social Channels' };

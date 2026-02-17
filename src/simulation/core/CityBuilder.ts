@@ -7,6 +7,8 @@ import { createDatabaseCluster } from '../entities/buildings/databaseCluster';
 import { createAILab } from '../entities/buildings/aiLab';
 import { createSocialChannels } from '../entities/buildings/socialChannels';
 import { createShops } from '../entities/buildings/shops';
+import { createPartnerExchange } from '../entities/buildings/partnerExchange';
+import { createNotificationHub } from '../entities/buildings/notificationHub';
 import { createEventBus } from '../entities/microservices/eventBus';
 import { createFlowParticles as createFlowParticlesEntity } from '../entities/microservices/flowParticles';
 import { createMaterialPalette } from '../providers/materialProvider';
@@ -39,9 +41,13 @@ export class CityBuilder {
         createAILab(this.scene, this.materials, this.services, 300, 0, -100);
         createSocialChannels(this.scene, this.materials, this.services, -300, 0, 200);
         createShops(this.scene, this.materials, this.services, 0, 0, 250);
+        createPartnerExchange(this.scene, this.materials, this.services, 220, 0, 260);
+        createNotificationHub(this.scene, this.materials, this.services, -180, 0, 120);
 
         createEventBus(this.scene, this.materials, this.services);
         createPaths(this.scene, this.materials);
+
+        this.createFlowParticles(-40, 0, 250, 280);
     }
 
     createFlowParticles(x: number, y: number, z: number, length: number): void {
