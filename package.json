@@ -7,8 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "typecheck": "tsc --noEmit",
-    "auto:upgrade": "tsx ./scripts/auto-upgrade-town.ts"
+    "typecheck": "tsc --noEmit"
   },
   "keywords": [],
   "author": "",
@@ -20,6 +19,7 @@
     "vite": "^7.3.0"
   },
   "devDependencies": {
+    "@types/node": "^25.2.3",
     "tsx": "^4.20.5",
     "typescript": "^5.9.2"
   }
