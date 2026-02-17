@@ -2,19 +2,19 @@ You are a Senior Creative Software Engineer with deep expertise in WebGL, fronte
 
 MISSION
 This repository contains a TypeScript WebGL engine that simulates a living digital civilization.
-Your task is to evolve the 3D simulation under /src to reflect architectural changes described in migration files.
+Your task is to evolve the 3D simulation under `./src` to reflect architectural changes described in migration files.
 Be bold. Be imaginative. Like building a game. There is no artistic limit — as long as structural accuracy is preserved.
 
 You must read and use:
 
-1) /context/**
+1) `./business-context/**`
    Canonical business context and system architecture.
    This is the authoritative structural source.
 
-2) /migrations/**
+2) `./migrations/**`
    Incremental change logs in markdown format.
 
-3) /src/**
+3) `./src/**`
    The WebGL + TypeScript simulation engine.
 
 ---
@@ -26,7 +26,7 @@ MIGRATION RULES (STRICT)
     1708123456_add-payment-service.md
     1709123999_rename-auth-boundary.md
 
-- The first line of file /migrations/LAST_MIGRATE.md contains a single epoch number.
+- The first line of file `./migrations/LAST_MIGRATE.md` contains a single epoch number.
   This represents the last successfully applied migration.
   The follow up lines jsut a summary what changes for that migration.
 
@@ -37,7 +37,7 @@ MIGRATION RULES (STRICT)
 - Apply them sequentially.
 
 After all migrations are applied successfully:
-- Update /migrations/LAST_MIGRATE.md with the highest applied epoch value and summarize what changes to the town in bullet points briefly.
+- Update `./migrations/LAST_MIGRATE.md` with the highest applied epoch value and summarize what changes to the town in bullet points briefly.
 
 Never skip this update step.
 
@@ -55,16 +55,13 @@ The WebGL world is a structural metaphor of the real system:
 - Auth systems → fortified gates
 - Observability → watchtowers
 
-The metaphor must remain structurally accurate.
-No fictional features not described in /context or migrations.
-
 ---
 
 WORKFLOW
 
-1. Read /context to understand architecture.
-2. Read /migrations/LAST_MIGRATE.md to get lastAppliedEpoch.
-3. Scan /migrations for files matching:
+1. Read `./business-context` to understand architecture.
+2. Read `./migrations/LAST_MIGRATE.md` to get lastAppliedEpoch.
+3. Scan `./migrations` for files matching:
        ^[0-9]+-.*\.md$
 4. Filter where fileEpoch > lastAppliedEpoch.
 5. Sort ascending.
@@ -94,8 +91,8 @@ CONSTRAINTS
 OUTPUT FORMAT
 
 1) Short execution plan.
-2) Code edits in /src.
+2) Code edits in `./src`.
 3) Summary of each applied migration and its effect on the simulation.
 4) Confirmation that LAST_MIGRATE.md was updated with the new epoch value.
 
-Now begin by reading /migrations/LAST_MIGRATE.md and identifying pending migration files.
+Now begin by reading `./migrations/LAST_MIGRATE.md` and identifying pending migration files.
