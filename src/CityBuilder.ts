@@ -2,7 +2,13 @@ import * as THREE from 'three';
 import { CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
 
 export class CityBuilder {
-    constructor(scene) {
+    private scene: THREE.Scene;
+    private particles: THREE.Mesh[];
+    private mixers: THREE.AnimationMixer[];
+    private clock: THREE.Clock;
+    private materials: Record<string, THREE.Material>;
+
+    constructor(scene: THREE.Scene) {
         this.scene = scene;
         this.particles = [];
         this.mixers = [];
@@ -119,7 +125,7 @@ export class CityBuilder {
         this.createCloud(0, 500, 0);
     }
 
-    createForest(x, z, count) {
+    createForest(x: number, z: number, count: number) {
         for(let i=0; i<count; i++) {
             const ox = (Math.random() - 0.5) * 100;
             const oz = (Math.random() - 0.5) * 100;
@@ -127,7 +133,7 @@ export class CityBuilder {
         }
     }
 
-    createTree(x, y, z) {
+    createTree(x: number, y: number, z: number) {
         const trunkGeo = new THREE.CylinderGeometry(4, 6, 20, 6);
         const trunkMat = new THREE.MeshStandardMaterial({ color: 0x8b5a2b, roughness: 1.0 });
         const trunk = new THREE.Mesh(trunkGeo, trunkMat);
@@ -146,7 +152,7 @@ export class CityBuilder {
         this.scene.add(leaves);
     }
 
-    createCloud(x, y, z) {
+    createCloud(x: number, y: number, z: number) {
         const cloudGroup = new THREE.Group();
         // Voxel Clouds (Cubes)
         const mat = new THREE.MeshStandardMaterial({ color: 0xffffff, flatShading: true, transparent: true, opacity: 0.9 });
@@ -171,7 +177,7 @@ export class CityBuilder {
 
     // --- Specific Building Architectures ---
 
-    createKaojaiCore(x, y, z) {
+    createKaojaiCore(x: number, y: number, z: number) {
         const group = new THREE.Group();
 
         // Base Podium
@@ -267,7 +273,7 @@ export class CityBuilder {
         this.scene.add(group);
     }
 
-    createDatabase(x, y, z) {
+    createDatabase(x: number, y: number, z: number) {
         const group = new THREE.Group();
 
         // Stack of "Servers" instead of one cylinder
@@ -303,7 +309,7 @@ export class CityBuilder {
         this.scene.add(group);
     }
 
-    createAILab(x, y, z) {
+    createAILab(x: number, y: number, z: number) {
         const group = new THREE.Group();
 
         // Glass Box Container
@@ -336,7 +342,7 @@ export class CityBuilder {
         this.scene.add(group);
     }
 
-    createSocialCubes(x, y, z) {
+    createSocialCubes(x: number, y: number, z: number) {
         const group = new THREE.Group();
 
         const size = 50;
@@ -365,7 +371,7 @@ export class CityBuilder {
         this.scene.add(group);
     }
 
-    createShops(x, y, z) {
+    createShops(x: number, y: number, z: number) {
         const group = new THREE.Group();
 
         const width = 60;
@@ -409,7 +415,11 @@ export class CityBuilder {
         // Connects Kaojai (0,0,0) to Database (-300, 0, -200) and Social (-300, 0, 200)
         // Using "Pipes" with joints
 
-        const createPipeSegment = (start, end, material) => {
+        const createPipeSegment = (
+            start: THREE.Vector3,
+            end: THREE.Vector3,
+            material: THREE.Material
+        ) => {
             const direction = new THREE.Vector3().subVectors(end, start);
             const length = direction.length();
 
@@ -456,7 +466,7 @@ export class CityBuilder {
         group.position.set(-100, 20, 0); // Offset label center
     }
 
-    createFlowParticles(x, y, z, length) {
+    createFlowParticles(x: number, y: number, z: number, length: number) {
         // Simple particles moving along the x-axis
         for(let i=0; i<10; i++) {
             const geo = new THREE.SphereGeometry(3, 8, 8);
@@ -475,7 +485,7 @@ export class CityBuilder {
         }
     }
 
-    addLabel(parent, text, yOffset) {
+    addLabel(parent: THREE.Object3D, text: string, yOffset: number) {
         const div = document.createElement('div');
         div.className = 'label';
         div.textContent = text;
