@@ -9,8 +9,9 @@ import { createSocialChannels } from '../entities/buildings/socialChannels';
 import { createShops } from '../entities/buildings/shops';
 import { createPartnerExchange } from '../entities/buildings/partnerExchange';
 import { createNotificationHub } from '../entities/buildings/notificationHub';
+import { createChatConcourse } from '../entities/buildings/chatConcourse';
 import { createEventBus } from '../entities/microservices/eventBus';
-import { createFlowParticles as createFlowParticlesEntity } from '../entities/microservices/flowParticles';
+import { createFlowParticles as createFlowParticlesEntity, createMessageStream } from '../entities/microservices/flowParticles';
 import { createMaterialPalette } from '../providers/materialProvider';
 import { addLabel } from '../providers/labelProvider';
 import type { CityServices, MaterialPalette } from '../types/city';
@@ -40,6 +41,7 @@ export class CityBuilder {
         createDatabaseCluster(this.scene, this.materials, this.services, -300, 0, -200);
         createAILab(this.scene, this.materials, this.services, 300, 0, -100);
         createSocialChannels(this.scene, this.materials, this.services, -300, 0, 200);
+        createChatConcourse(this.scene, this.materials, this.services, 120, 0, 140);
         createShops(this.scene, this.materials, this.services, 0, 0, 250);
         createPartnerExchange(this.scene, this.materials, this.services, 220, 0, 260);
         createNotificationHub(this.scene, this.materials, this.services, -180, 0, 120);
@@ -48,10 +50,15 @@ export class CityBuilder {
         createPaths(this.scene, this.materials);
 
         this.createFlowParticles(-40, 0, 250, 280);
+        this.createMessageStream(120, 0, 140, 200);
     }
 
     createFlowParticles(x: number, y: number, z: number, length: number): void {
         createFlowParticlesEntity(this.scene, this.particles, x, y, z, length);
+    }
+
+    createMessageStream(x: number, y: number, z: number, length: number): void {
+        createMessageStream(this.scene, this.particles, x, y, z, length);
     }
 
     update(): void {
@@ -61,10 +68,8 @@ export class CityBuilder {
 
         this.particles.forEach((particle) => {
             particle.position.x += particle.userData.velocity;
-            if (particle.position.x > particle.userData.limit + (particle.parent?.position.x ?? 0)) {
-                if (particle.position.x > -50) {
-                    particle.position.x = -250;
-                }
+            if (particle.position.x > particle.userData.endX) {
+                particle.position.x = particle.userData.startX;
             }
         });
     }
