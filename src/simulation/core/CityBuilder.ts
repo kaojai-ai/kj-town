@@ -51,18 +51,47 @@ export class CityBuilder {
 
         this.createFlowParticles(-40, 0, 250, 280);
         this.createMessageStream(120, 0, 140, 200);
+        this.createMessageStream(88, 0, 168, 130, {
+            color: 0xffd27a,
+            count: 10,
+            radius: 2.2,
+            yOffset: 38,
+            velocityBase: 0.95,
+            velocityStep: 0.03,
+            waveAmplitude: 0.25,
+            waveSpeed: 1.2,
+            laneSpread: 0.55,
+        });
     }
 
     createFlowParticles(x: number, y: number, z: number, length: number): void {
         createFlowParticlesEntity(this.scene, this.particles, x, y, z, length);
     }
 
-    createMessageStream(x: number, y: number, z: number, length: number): void {
-        createMessageStream(this.scene, this.particles, x, y, z, length);
+    createMessageStream(
+        x: number,
+        y: number,
+        z: number,
+        length: number,
+        options?: {
+            color?: number;
+            count?: number;
+            radius?: number;
+            yOffset?: number;
+            zOffset?: number;
+            velocityBase?: number;
+            velocityStep?: number;
+            waveAmplitude?: number;
+            waveSpeed?: number;
+            laneSpread?: number;
+        }
+    ): void {
+        createMessageStream(this.scene, this.particles, x, y, z, length, options);
     }
 
     update(): void {
         const delta = this.clock.getDelta();
+        const elapsed = this.clock.elapsedTime;
 
         this.mixers.forEach((mixer) => mixer.update(delta));
 
@@ -70,6 +99,20 @@ export class CityBuilder {
             particle.position.x += particle.userData.velocity;
             if (particle.position.x > particle.userData.endX) {
                 particle.position.x = particle.userData.startX;
+            }
+
+            if (typeof particle.userData.baseY === 'number') {
+                const phase = particle.userData.phase ?? 0;
+                const waveSpeed = particle.userData.waveSpeed ?? 1;
+                const waveAmplitude = particle.userData.waveAmplitude ?? 0;
+                particle.position.y = particle.userData.baseY + Math.sin(elapsed * waveSpeed + phase) * waveAmplitude;
+            }
+
+            if (typeof particle.userData.baseZ === 'number') {
+                const phase = particle.userData.phase ?? 0;
+                const waveSpeed = particle.userData.waveSpeed ?? 1;
+                const waveAmplitude = particle.userData.waveAmplitude ?? 0;
+                particle.position.z = particle.userData.baseZ + Math.cos(elapsed * waveSpeed + phase) * waveAmplitude * 0.25;
             }
         });
     }

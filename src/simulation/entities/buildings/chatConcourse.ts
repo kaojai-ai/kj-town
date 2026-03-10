@@ -36,6 +36,20 @@ export function createChatConcourse(
     const messageDeck = new THREE.Mesh(new THREE.BoxGeometry(80, 6, 50), materials.partnerMetal);
     messageDeck.position.set(35, 8, 5);
 
+    const cancellationAnnex = new THREE.Mesh(new THREE.BoxGeometry(44, 16, 32), materials.glass);
+    cancellationAnnex.position.set(-6, 14, 42);
+    cancellationAnnex.castShadow = true;
+
+    const cancellationGate = new THREE.Mesh(new THREE.TorusGeometry(12, 2, 10, 36), materials.screenAmber);
+    cancellationGate.rotation.x = Math.PI / 2;
+    cancellationGate.position.set(20, 24, 43);
+
+    const cancellationChannel = new THREE.Mesh(new THREE.BoxGeometry(56, 2.6, 8), materials.pipeYellow);
+    cancellationChannel.position.set(26, 10, 42);
+
+    const cancellationReturnLane = new THREE.Mesh(new THREE.BoxGeometry(48, 2.3, 6), materials.pipeBlue);
+    cancellationReturnLane.position.set(22, 16, 40);
+
     const railLeft = new THREE.Mesh(new THREE.TorusGeometry(32, 2, 10, 48, Math.PI), materials.pipeBlue);
     railLeft.rotation.set(Math.PI / 2, 0, Math.PI / 2);
     railLeft.position.set(35, 22, -18);
@@ -43,6 +57,23 @@ export function createChatConcourse(
     const railRight = new THREE.Mesh(new THREE.TorusGeometry(32, 2, 10, 48, Math.PI), materials.pipeYellow);
     railRight.rotation.set(Math.PI / 2, 0, -Math.PI / 2);
     railRight.position.set(35, 22, 28);
+
+    const stabilizerHub = new THREE.Mesh(new THREE.CylinderGeometry(7, 9, 24, 18), materials.screenBlue);
+    stabilizerHub.position.set(58, 20, 5);
+    stabilizerHub.castShadow = true;
+
+    const stabilizerRing = new THREE.Mesh(new THREE.TorusGeometry(13, 1.7, 12, 36), materials.screenBlue);
+    stabilizerRing.rotation.x = Math.PI / 2;
+    stabilizerRing.position.set(58, 34, 5);
+
+    const stabilizerStrutA = new THREE.Mesh(new THREE.BoxGeometry(3, 16, 3), materials.partnerMetal);
+    stabilizerStrutA.position.set(47, 16, -4);
+    const stabilizerStrutB = new THREE.Mesh(new THREE.BoxGeometry(3, 16, 3), materials.partnerMetal);
+    stabilizerStrutB.position.set(47, 16, 14);
+    const stabilizerStrutC = new THREE.Mesh(new THREE.BoxGeometry(3, 16, 3), materials.partnerMetal);
+    stabilizerStrutC.position.set(69, 16, -4);
+    const stabilizerStrutD = new THREE.Mesh(new THREE.BoxGeometry(3, 16, 3), materials.partnerMetal);
+    stabilizerStrutD.position.set(69, 16, 14);
 
     const podGeo = new THREE.SphereGeometry(4, 12, 12);
     const podPositions = [
@@ -69,8 +100,18 @@ export function createChatConcourse(
         disclosureRing,
         disclosurePanel,
         messageDeck,
+        cancellationAnnex,
+        cancellationGate,
+        cancellationChannel,
+        cancellationReturnLane,
         railLeft,
-        railRight
+        railRight,
+        stabilizerHub,
+        stabilizerRing,
+        stabilizerStrutA,
+        stabilizerStrutB,
+        stabilizerStrutC,
+        stabilizerStrutD
     );
 
     group.position.set(x, y, z);
@@ -78,5 +119,7 @@ export function createChatConcourse(
 
     services.addLabel(group, 'Chat Module', 110);
     services.addLabel(disclosureTower, 'AI Disclosure', 60);
+    services.addLabel(cancellationAnnex, 'Cancel Clarity Annex', 36);
+    services.addLabel(stabilizerHub, 'Message Stabilizer', 34);
     scene.add(group);
 }
