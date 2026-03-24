@@ -42,6 +42,51 @@ export function createAILab(
     orbitRing.position.set(0, 90, 0);
     group.add(assistantCore, orbitRing);
 
+    const playgroundDeck = new THREE.Mesh(new THREE.CylinderGeometry(36, 44, 8, 24), materials.concrete);
+    playgroundDeck.position.set(-58, 14, 42);
+    playgroundDeck.castShadow = true;
+
+    const playgroundDome = new THREE.Mesh(new THREE.SphereGeometry(24, 22, 22), materials.glass);
+    playgroundDome.position.set(-58, 32, 42);
+    playgroundDome.scale.y = 0.7;
+
+    const wizardStem = new THREE.Mesh(new THREE.BoxGeometry(56, 8, 18), materials.partnerMetal);
+    wizardStem.position.set(60, 14, 42);
+
+    const wizardStepGeo = new THREE.CylinderGeometry(6, 6, 22, 16);
+    const wizardPositions = [42, 60, 78];
+    wizardPositions.forEach((offset, index) => {
+        const step = new THREE.Mesh(wizardStepGeo, materials.screenAmber);
+        step.position.set(offset, 25 + index * 6, 42);
+        step.castShadow = true;
+        group.add(step);
+    });
+
+    const faqCondenser = new THREE.Mesh(new THREE.BoxGeometry(12, 34, 12), materials.screenBlue);
+    faqCondenser.position.set(-20, 28, 44);
+    const faqInlet = new THREE.Mesh(new THREE.BoxGeometry(30, 4, 10), materials.pipeYellow);
+    faqInlet.position.set(-33, 17, 44);
+    const faqOutlet = new THREE.Mesh(new THREE.BoxGeometry(24, 4, 10), materials.pipeBlue);
+    faqOutlet.position.set(-5, 39, 44);
+
+    const guidedRail = new THREE.Mesh(new THREE.TorusGeometry(20, 2, 10, 36), materials.pipeRed);
+    guidedRail.rotation.x = Math.PI / 2;
+    guidedRail.position.set(0, 56, -34);
+
+    const guidedNode = new THREE.Mesh(new THREE.SphereGeometry(8, 16, 16), materials.pipeRed);
+    guidedNode.position.set(0, 56, -54);
+
+    group.add(
+        playgroundDeck,
+        playgroundDome,
+        wizardStem,
+        faqCondenser,
+        faqInlet,
+        faqOutlet,
+        guidedRail,
+        guidedNode
+    );
+
     const frameGeo = new THREE.BoxGeometry(width + 4, 10, depth + 4);
     const base = new THREE.Mesh(frameGeo, materials.concrete);
     base.position.y = 5;
@@ -53,5 +98,9 @@ export function createAILab(
     group.userData = { isBuilding: true, name: 'AI Laboratory' };
 
     services.addLabel(group, 'AI LAB', 170);
+    services.addLabel(playgroundDome, 'Playground', 34);
+    services.addLabel(wizardStem, '3-Step Wizard', 22);
+    services.addLabel(faqCondenser, 'FAQ Forge', 28);
+    services.addLabel(guidedNode, 'Guided Agent', 24);
     scene.add(group);
 }

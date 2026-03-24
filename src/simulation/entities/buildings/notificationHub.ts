@@ -42,10 +42,19 @@ export function createNotificationHub(
         group.add(stem, light);
     });
 
+    const roleGateLeft = new THREE.Mesh(new THREE.BoxGeometry(20, 16, 6), materials.pipeBlue);
+    roleGateLeft.position.set(-32, 18, 30);
+    const roleGateMid = new THREE.Mesh(new THREE.BoxGeometry(20, 16, 6), materials.pipeYellow);
+    roleGateMid.position.set(0, 18, 30);
+    const roleGateRight = new THREE.Mesh(new THREE.BoxGeometry(20, 16, 6), materials.pipeRed);
+    roleGateRight.position.set(32, 18, 30);
+
     group.add(base, tower, crown);
+    group.add(roleGateLeft, roleGateMid, roleGateRight);
     group.position.set(x, y, z);
     group.userData = { isBuilding: true, name: 'Notification Control Hub' };
 
     services.addLabel(group, 'Notification Control', 120);
+    services.addLabel(roleGateMid, 'Role Access Gate', 24);
     scene.add(group);
 }

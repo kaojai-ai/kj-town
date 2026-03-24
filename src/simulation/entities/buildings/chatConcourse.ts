@@ -50,6 +50,11 @@ export function createChatConcourse(
     const cancellationReturnLane = new THREE.Mesh(new THREE.BoxGeometry(48, 2.3, 6), materials.pipeBlue);
     cancellationReturnLane.position.set(22, 16, 40);
 
+    const humanTakeoverDeck = new THREE.Mesh(new THREE.BoxGeometry(30, 6, 18), materials.concrete);
+    humanTakeoverDeck.position.set(-34, 12, -36);
+    const humanTakeoverSignal = new THREE.Mesh(new THREE.CylinderGeometry(5, 5, 24, 16), materials.pipeRed);
+    humanTakeoverSignal.position.set(-34, 24, -36);
+
     const railLeft = new THREE.Mesh(new THREE.TorusGeometry(32, 2, 10, 48, Math.PI), materials.pipeBlue);
     railLeft.rotation.set(Math.PI / 2, 0, Math.PI / 2);
     railLeft.position.set(35, 22, -18);
@@ -74,6 +79,17 @@ export function createChatConcourse(
     stabilizerStrutC.position.set(69, 16, -4);
     const stabilizerStrutD = new THREE.Mesh(new THREE.BoxGeometry(3, 16, 3), materials.partnerMetal);
     stabilizerStrutD.position.set(69, 16, 14);
+
+    const originalAppGate = new THREE.Mesh(new THREE.TorusGeometry(10, 1.6, 10, 32), materials.pipeBlue);
+    originalAppGate.rotation.x = Math.PI / 2;
+    originalAppGate.position.set(64, 18, -30);
+    const originalAppRail = new THREE.Mesh(new THREE.BoxGeometry(36, 2.2, 6), materials.pipeBlue);
+    originalAppRail.position.set(76, 12, -30);
+
+    const listTurboLane = new THREE.Mesh(new THREE.BoxGeometry(90, 2.2, 7), materials.pipeYellow);
+    listTurboLane.position.set(34, 12, -2);
+    const listTurboEcho = new THREE.Mesh(new THREE.BoxGeometry(86, 2, 5), materials.pipeBlue);
+    listTurboEcho.position.set(35, 15, -2);
 
     const podGeo = new THREE.SphereGeometry(4, 12, 12);
     const podPositions = [
@@ -104,6 +120,8 @@ export function createChatConcourse(
         cancellationGate,
         cancellationChannel,
         cancellationReturnLane,
+        humanTakeoverDeck,
+        humanTakeoverSignal,
         railLeft,
         railRight,
         stabilizerHub,
@@ -111,7 +129,11 @@ export function createChatConcourse(
         stabilizerStrutA,
         stabilizerStrutB,
         stabilizerStrutC,
-        stabilizerStrutD
+        stabilizerStrutD,
+        originalAppGate,
+        originalAppRail,
+        listTurboLane,
+        listTurboEcho
     );
 
     group.position.set(x, y, z);
@@ -121,5 +143,7 @@ export function createChatConcourse(
     services.addLabel(disclosureTower, 'AI Disclosure', 60);
     services.addLabel(cancellationAnnex, 'Cancel Clarity Annex', 36);
     services.addLabel(stabilizerHub, 'Message Stabilizer', 34);
+    services.addLabel(humanTakeoverSignal, 'Human Handoff', 30);
+    services.addLabel(originalAppGate, 'Original App Jump', 24);
     scene.add(group);
 }

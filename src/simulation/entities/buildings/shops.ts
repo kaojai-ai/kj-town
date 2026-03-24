@@ -42,7 +42,12 @@ export function createShops(
             const lens = new THREE.Mesh(new THREE.TorusGeometry(7, 1.5, 8, 24), materials.screenBlue);
             lens.rotation.x = Math.PI / 2;
             lens.position.set(-width * 0.35, 20, depth * 0.4);
-            shopGroup.add(canopy, dayViewPanel, searchKiosk, lens);
+            const availabilityRing = new THREE.Mesh(new THREE.TorusGeometry(12, 1.5, 10, 32), materials.pipeYellow);
+            availabilityRing.rotation.x = Math.PI / 2;
+            availabilityRing.position.set(width * 0.3, 24, depth * 0.38);
+            const availabilityMeter = new THREE.Mesh(new THREE.CylinderGeometry(3.5, 3.5, 18, 12), materials.screenBlue);
+            availabilityMeter.position.set(width * 0.3, 9, depth * 0.38);
+            shopGroup.add(canopy, dayViewPanel, searchKiosk, lens, availabilityRing, availabilityMeter);
         }
 
         if (i === 1) {
@@ -50,7 +55,20 @@ export function createShops(
             galleryFrame.position.set(0, height * 0.65, depth * 0.4);
             const galleryBase = new THREE.Mesh(new THREE.BoxGeometry(width * 0.95, 4, 6), materials.partnerMetal);
             galleryBase.position.set(0, height * 0.55, depth * 0.4);
-            shopGroup.add(galleryFrame, galleryBase);
+            const caseBeacon = new THREE.Mesh(new THREE.CylinderGeometry(5, 5, 26, 14), materials.screenBlue);
+            caseBeacon.position.set(-width * 0.32, 13, depth * 0.36);
+            const caseHalo = new THREE.Mesh(new THREE.TorusGeometry(9, 1.5, 10, 28), materials.pipeBlue);
+            caseHalo.rotation.x = Math.PI / 2;
+            caseHalo.position.set(-width * 0.32, 28, depth * 0.36);
+            shopGroup.add(galleryFrame, galleryBase, caseBeacon, caseHalo);
+        }
+
+        if (i === 2) {
+            const faqVault = new THREE.Mesh(new THREE.BoxGeometry(width * 0.68, 20, 6), materials.screenBlue);
+            faqVault.position.set(0, height * 0.6, depth * 0.38);
+            const replyRail = new THREE.Mesh(new THREE.BoxGeometry(width * 0.8, 3, 7), materials.pipeYellow);
+            replyRail.position.set(0, height * 0.42, depth * 0.38);
+            shopGroup.add(faqVault, replyRail);
         }
 
         shopGroup.position.set((i - 1.5) * spacing, 0, 0);
