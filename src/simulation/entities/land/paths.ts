@@ -14,6 +14,9 @@ export function createPaths(scene: THREE.Scene, materials: MaterialPalette): voi
         { w: 120, h: 34, x: -300, z: 256 },
         { w: 110, h: 34, x: 300, z: -40 },
         { w: 170, h: 30, x: 54, z: 250 },
+        { w: 130, h: 30, x: 256, z: 258 },
+        { w: 120, h: 26, x: 182, z: 142 },
+        { w: 130, h: 26, x: 90, z: 140 },
     ];
 
     pathConfig.forEach((path) => {

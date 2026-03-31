@@ -91,6 +91,31 @@ export function createChatConcourse(
     const listTurboEcho = new THREE.Mesh(new THREE.BoxGeometry(86, 2, 5), materials.pipeBlue);
     listTurboEcho.position.set(35, 15, -2);
 
+    const insightTower = new THREE.Mesh(new THREE.CylinderGeometry(7, 8, 42, 16), materials.partnerMetal);
+    insightTower.position.set(-64, 27, -28);
+    const sentimentRing = new THREE.Mesh(new THREE.TorusGeometry(11, 1.7, 10, 32), materials.pipeYellow);
+    sentimentRing.rotation.x = Math.PI / 2;
+    sentimentRing.position.set(-64, 46, -28);
+    const momentArchive = new THREE.Mesh(new THREE.BoxGeometry(24, 18, 4), materials.screenBlue);
+    momentArchive.position.set(-64, 20, -48);
+
+    const feedbackPad = new THREE.Mesh(new THREE.BoxGeometry(34, 6, 26), materials.concrete);
+    feedbackPad.position.set(68, 8, 36);
+    const feedbackLoop = new THREE.Mesh(new THREE.TorusGeometry(10, 1.8, 10, 32), materials.pipeRed);
+    feedbackLoop.rotation.x = Math.PI / 2;
+    feedbackLoop.position.set(68, 19, 36);
+    const feedbackTerminal = new THREE.Mesh(new THREE.BoxGeometry(18, 14, 5), materials.screenAmber);
+    feedbackTerminal.position.set(68, 18, 48);
+
+    const sidePanelWing = new THREE.Mesh(new THREE.BoxGeometry(34, 28, 26), materials.glass);
+    sidePanelWing.position.set(64, 20, -38);
+    const sidePanelRailA = new THREE.Mesh(new THREE.BoxGeometry(26, 2.4, 4), materials.pipeBlue);
+    sidePanelRailA.position.set(64, 24, -24);
+    const sidePanelRailB = new THREE.Mesh(new THREE.BoxGeometry(26, 2.4, 4), materials.pipeYellow);
+    sidePanelRailB.position.set(64, 18, -24);
+    const sidePanelRailC = new THREE.Mesh(new THREE.BoxGeometry(26, 2.4, 4), materials.pipeRed);
+    sidePanelRailC.position.set(64, 12, -24);
+
     const podGeo = new THREE.SphereGeometry(4, 12, 12);
     const podPositions = [
         new THREE.Vector3(10, 22, -18),
@@ -133,7 +158,17 @@ export function createChatConcourse(
         originalAppGate,
         originalAppRail,
         listTurboLane,
-        listTurboEcho
+        listTurboEcho,
+        insightTower,
+        sentimentRing,
+        momentArchive,
+        feedbackPad,
+        feedbackLoop,
+        feedbackTerminal,
+        sidePanelWing,
+        sidePanelRailA,
+        sidePanelRailB,
+        sidePanelRailC
     );
 
     group.position.set(x, y, z);
@@ -145,5 +180,8 @@ export function createChatConcourse(
     services.addLabel(stabilizerHub, 'Message Stabilizer', 34);
     services.addLabel(humanTakeoverSignal, 'Human Handoff', 30);
     services.addLabel(originalAppGate, 'Original App Jump', 24);
+    services.addLabel(insightTower, 'Sentiment & Notes', 34);
+    services.addLabel(feedbackLoop, 'AI Feedback Loop', 24);
+    services.addLabel(sidePanelWing, 'AI Side Panel', 30);
     scene.add(group);
 }

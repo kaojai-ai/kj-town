@@ -41,10 +41,35 @@ export function createPartnerExchange(
     const rail = new THREE.Mesh(new THREE.BoxGeometry(160, 6, 12), materials.pipeBlue);
     rail.position.set(-80, 14, 40);
 
-    group.add(base, hub, hubCap, rail);
+    const billingAtrium = new THREE.Mesh(new THREE.BoxGeometry(70, 32, 44), materials.glass);
+    billingAtrium.position.set(0, 24, -30);
+    billingAtrium.castShadow = true;
+
+    const subscriptionCore = new THREE.Mesh(new THREE.CylinderGeometry(7, 7, 20, 14), materials.pipeBlue);
+    subscriptionCore.position.set(-14, 12, -30);
+    const topUpCore = new THREE.Mesh(new THREE.CylinderGeometry(7, 7, 20, 14), materials.pipeYellow);
+    topUpCore.position.set(14, 12, -30);
+    const billingBridge = new THREE.Mesh(new THREE.BoxGeometry(34, 3, 6), materials.partnerMetal);
+    billingBridge.position.set(0, 20, -30);
+    const billingHalo = new THREE.Mesh(new THREE.TorusGeometry(16, 1.7, 10, 34), materials.screenAmber);
+    billingHalo.rotation.x = Math.PI / 2;
+    billingHalo.position.set(0, 34, -30);
+
+    group.add(
+        base,
+        hub,
+        hubCap,
+        rail,
+        billingAtrium,
+        subscriptionCore,
+        topUpCore,
+        billingBridge,
+        billingHalo
+    );
     group.position.set(x, y, z);
     group.userData = { isBuilding: true, name: 'Partner Sync Exchange' };
 
     services.addLabel(group, 'Partner Sync', 120);
+    services.addLabel(billingAtrium, 'Billing Unified', 30);
     scene.add(group);
 }
