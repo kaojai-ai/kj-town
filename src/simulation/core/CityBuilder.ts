@@ -98,6 +98,42 @@ export class CityBuilder {
             waveSpeed: 1.6,
             laneSpread: 0.45,
         });
+        this.createMessageStream(255, 0, -72, 170, {
+            color: 0xffde74,
+            count: 12,
+            radius: 2.1,
+            yOffset: 46,
+            zOffset: 0,
+            velocityBase: 1.35,
+            velocityStep: 0.05,
+            waveAmplitude: 0.33,
+            waveSpeed: 1.9,
+            laneSpread: 0.55,
+        });
+        this.createMessageStream(210, 0, 162, 160, {
+            color: 0x8ad4ff,
+            count: 11,
+            radius: 2.1,
+            yOffset: 40,
+            zOffset: -6,
+            velocityBase: 1.15,
+            velocityStep: 0.04,
+            waveAmplitude: 0.28,
+            waveSpeed: 1.5,
+            laneSpread: 0.5,
+        });
+        this.createMessageStream(120, 0, 106, 110, {
+            color: 0xff8b8b,
+            count: 8,
+            radius: 2.0,
+            yOffset: 35,
+            zOffset: -18,
+            velocityBase: 0.95,
+            velocityStep: 0.03,
+            waveAmplitude: 0.2,
+            waveSpeed: 1.3,
+            laneSpread: 0.4,
+        });
         this.createMessageStream(120, 0, 140, 90, {
             color: 0xff9f9f,
             count: 8,

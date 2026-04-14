@@ -55,6 +55,28 @@ export function createChatConcourse(
     const humanTakeoverSignal = new THREE.Mesh(new THREE.CylinderGeometry(5, 5, 24, 16), materials.pipeRed);
     humanTakeoverSignal.position.set(-34, 24, -36);
 
+    const handsOffArchive = new THREE.Mesh(new THREE.BoxGeometry(40, 22, 20), materials.glass);
+    handsOffArchive.position.set(-78, 18, -6);
+    handsOffArchive.castShadow = true;
+    const archiveClock = new THREE.Mesh(new THREE.TorusGeometry(9, 1.8, 10, 30), materials.screenBlue);
+    archiveClock.rotation.x = Math.PI / 2;
+    archiveClock.position.set(-78, 31, -6);
+    const archiveTimelineRail = new THREE.Mesh(new THREE.BoxGeometry(32, 2.4, 4), materials.pipeBlue);
+    archiveTimelineRail.position.set(-78, 13, 7);
+
+    const handoffTimeline = new THREE.Mesh(new THREE.BoxGeometry(62, 4, 10), materials.partnerMetal);
+    handoffTimeline.position.set(-6, 10, -48);
+    const markerPostGeo = new THREE.CylinderGeometry(2.2, 2.2, 12, 10);
+    const markerLightGeo = new THREE.SphereGeometry(3.5, 10, 10);
+    const markerXs = [-22, -6, 10];
+    markerXs.forEach((markerX, index) => {
+        const markerPost = new THREE.Mesh(markerPostGeo, materials.partnerMetal);
+        markerPost.position.set(markerX, 17, -48);
+        const markerLight = new THREE.Mesh(markerLightGeo, index === 1 ? materials.pipeRed : materials.screenAmber);
+        markerLight.position.set(markerX, 24, -48);
+        group.add(markerPost, markerLight);
+    });
+
     const railLeft = new THREE.Mesh(new THREE.TorusGeometry(32, 2, 10, 48, Math.PI), materials.pipeBlue);
     railLeft.rotation.set(Math.PI / 2, 0, Math.PI / 2);
     railLeft.position.set(35, 22, -18);
@@ -147,6 +169,10 @@ export function createChatConcourse(
         cancellationReturnLane,
         humanTakeoverDeck,
         humanTakeoverSignal,
+        handsOffArchive,
+        archiveClock,
+        archiveTimelineRail,
+        handoffTimeline,
         railLeft,
         railRight,
         stabilizerHub,
@@ -179,6 +205,8 @@ export function createChatConcourse(
     services.addLabel(cancellationAnnex, 'Cancel Clarity Annex', 36);
     services.addLabel(stabilizerHub, 'Message Stabilizer', 34);
     services.addLabel(humanTakeoverSignal, 'Human Handoff', 30);
+    services.addLabel(handsOffArchive, 'Hands-off History', 28);
+    services.addLabel(handoffTimeline, 'Handoff Timeline', 20);
     services.addLabel(originalAppGate, 'Original App Jump', 24);
     services.addLabel(insightTower, 'Sentiment & Notes', 34);
     services.addLabel(feedbackLoop, 'AI Feedback Loop', 24);

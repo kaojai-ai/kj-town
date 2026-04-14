@@ -76,6 +76,31 @@ export function createAILab(
     const guidedNode = new THREE.Mesh(new THREE.SphereGeometry(8, 16, 16), materials.pipeRed);
     guidedNode.position.set(0, 56, -54);
 
+    const checkSlipToolBay = new THREE.Mesh(new THREE.BoxGeometry(66, 18, 26), materials.glass);
+    checkSlipToolBay.position.set(70, 16, -36);
+    checkSlipToolBay.castShadow = true;
+    const verificationGate = new THREE.Mesh(new THREE.TorusGeometry(11, 2, 10, 32), materials.pipeYellow);
+    verificationGate.rotation.x = Math.PI / 2;
+    verificationGate.position.set(52, 24, -36);
+    const duplicateScanner = new THREE.Mesh(new THREE.CylinderGeometry(6, 7, 18, 16), materials.screenBlue);
+    duplicateScanner.position.set(84, 12, -36);
+    const slipFeedRail = new THREE.Mesh(new THREE.BoxGeometry(42, 2.2, 6), materials.pipeBlue);
+    slipFeedRail.position.set(68, 10, -20);
+
+    const runtimeVault = new THREE.Mesh(new THREE.CylinderGeometry(13, 15, 32, 20), materials.partnerMetal);
+    runtimeVault.position.set(24, 26, 62);
+    runtimeVault.castShadow = true;
+    const runtimeHalo = new THREE.Mesh(new THREE.TorusGeometry(17, 1.8, 10, 36), materials.pipeYellow);
+    runtimeHalo.rotation.x = Math.PI / 2;
+    runtimeHalo.position.set(24, 44, 62);
+    const runtimeStabilizerA = new THREE.Mesh(new THREE.BoxGeometry(4, 18, 4), materials.pipeBlue);
+    runtimeStabilizerA.position.set(12, 16, 62);
+    const runtimeStabilizerB = new THREE.Mesh(new THREE.BoxGeometry(4, 18, 4), materials.pipeBlue);
+    runtimeStabilizerB.position.set(36, 16, 62);
+
+    const notificationBeacon = new THREE.Mesh(new THREE.BoxGeometry(18, 20, 5), materials.screenAmber);
+    notificationBeacon.position.set(66, 22, -52);
+
     group.add(
         playgroundDeck,
         playgroundDome,
@@ -84,7 +109,16 @@ export function createAILab(
         faqInlet,
         faqOutlet,
         guidedRail,
-        guidedNode
+        guidedNode,
+        checkSlipToolBay,
+        verificationGate,
+        duplicateScanner,
+        slipFeedRail,
+        runtimeVault,
+        runtimeHalo,
+        runtimeStabilizerA,
+        runtimeStabilizerB,
+        notificationBeacon
     );
 
     const frameGeo = new THREE.BoxGeometry(width + 4, 10, depth + 4);
@@ -102,5 +136,8 @@ export function createAILab(
     services.addLabel(wizardStem, '3-Step Wizard', 22);
     services.addLabel(faqCondenser, 'FAQ Forge', 28);
     services.addLabel(guidedNode, 'Guided Agent', 24);
+    services.addLabel(checkSlipToolBay, 'CheckSlip AI Tool', 24);
+    services.addLabel(runtimeVault, 'Stable Runtime', 24);
+    services.addLabel(notificationBeacon, 'Clear Alerts', 18);
     scene.add(group);
 }

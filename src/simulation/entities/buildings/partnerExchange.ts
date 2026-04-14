@@ -55,6 +55,17 @@ export function createPartnerExchange(
     billingHalo.rotation.x = Math.PI / 2;
     billingHalo.position.set(0, 34, -30);
 
+    const aiCostLedger = new THREE.Mesh(new THREE.BoxGeometry(56, 24, 20), materials.glass);
+    aiCostLedger.position.set(-54, 22, 22);
+    aiCostLedger.castShadow = true;
+    const transactionFilterRail = new THREE.Mesh(new THREE.BoxGeometry(42, 2.4, 5), materials.pipeBlue);
+    transactionFilterRail.position.set(-54, 12, 22);
+    const spendGauge = new THREE.Mesh(new THREE.CylinderGeometry(5, 5, 16, 14), materials.pipeYellow);
+    spendGauge.position.set(-72, 10, 22);
+    const ledgerBeacon = new THREE.Mesh(new THREE.TorusGeometry(9, 1.5, 10, 28), materials.screenAmber);
+    ledgerBeacon.rotation.x = Math.PI / 2;
+    ledgerBeacon.position.set(-38, 30, 22);
+
     group.add(
         base,
         hub,
@@ -64,12 +75,17 @@ export function createPartnerExchange(
         subscriptionCore,
         topUpCore,
         billingBridge,
-        billingHalo
+        billingHalo,
+        aiCostLedger,
+        transactionFilterRail,
+        spendGauge,
+        ledgerBeacon
     );
     group.position.set(x, y, z);
     group.userData = { isBuilding: true, name: 'Partner Sync Exchange' };
 
     services.addLabel(group, 'Partner Sync', 120);
     services.addLabel(billingAtrium, 'Billing Unified', 30);
+    services.addLabel(aiCostLedger, 'AI Transactions', 24);
     scene.add(group);
 }
