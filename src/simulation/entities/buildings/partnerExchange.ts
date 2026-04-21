@@ -66,6 +66,19 @@ export function createPartnerExchange(
     ledgerBeacon.rotation.x = Math.PI / 2;
     ledgerBeacon.position.set(-38, 30, 22);
 
+    const dailyInvoiceDeck = new THREE.Mesh(new THREE.BoxGeometry(64, 18, 24), materials.glass);
+    dailyInvoiceDeck.position.set(60, 16, 18);
+    dailyInvoiceDeck.castShadow = true;
+    const invoicePress = new THREE.Mesh(new THREE.BoxGeometry(20, 14, 16), materials.partnerMetal);
+    invoicePress.position.set(42, 13, 18);
+    const schedulerClock = new THREE.Mesh(new THREE.TorusGeometry(10, 1.8, 10, 34), materials.screenBlue);
+    schedulerClock.rotation.x = Math.PI / 2;
+    schedulerClock.position.set(74, 28, 18);
+    const invoiceRail = new THREE.Mesh(new THREE.BoxGeometry(72, 2.4, 6), materials.pipeYellow);
+    invoiceRail.position.set(58, 10, 18);
+    const invoiceDropNode = new THREE.Mesh(new THREE.CylinderGeometry(5, 5, 14, 14), materials.screenAmber);
+    invoiceDropNode.position.set(88, 10, 18);
+
     group.add(
         base,
         hub,
@@ -79,7 +92,12 @@ export function createPartnerExchange(
         aiCostLedger,
         transactionFilterRail,
         spendGauge,
-        ledgerBeacon
+        ledgerBeacon,
+        dailyInvoiceDeck,
+        invoicePress,
+        schedulerClock,
+        invoiceRail,
+        invoiceDropNode
     );
     group.position.set(x, y, z);
     group.userData = { isBuilding: true, name: 'Partner Sync Exchange' };
@@ -87,5 +105,6 @@ export function createPartnerExchange(
     services.addLabel(group, 'Partner Sync', 120);
     services.addLabel(billingAtrium, 'Billing Unified', 30);
     services.addLabel(aiCostLedger, 'AI Transactions', 24);
+    services.addLabel(dailyInvoiceDeck, 'Daily Invoice Engine', 24);
     scene.add(group);
 }

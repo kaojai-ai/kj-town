@@ -1,5 +1,5 @@
-1776143987
-- Extended Chat Concourse with a Hands-off History archive and a centered handoff timeline marker lane for clearer human-transfer visibility.
-- Added an AI Transaction Ledger wing in Partner Sync so cost-driving AI usage and filtering are visually represented near Billing Unified.
-- Expanded the AI Lab with a CheckSlip AI Tool bay, clearer alert beaconing, and a stabilized runtime vault to reflect reliability upgrades.
-- Added new service roads and message streams linking the upgraded AI, chat, and partner districts.
+1776748838
+- Added an Ad Referral Context observatory in Chat Concourse so source metadata is visible directly on the chat timeline lane.
+- Built a Daily Invoice Engine in Partner Sync with scheduler clock, invoice press, and automated payout rail to represent end-of-cycle daily billing.
+- Upgraded KaoJai Core with a cleaner headerless admin deck and added LINE Auth Failover gates in Social Channels for more reliable sign-in flow.
+- Extended roads and lightweight data streams to connect the new billing, chat-origin, and authentication structures.

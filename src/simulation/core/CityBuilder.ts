@@ -146,6 +146,42 @@ export class CityBuilder {
             waveSpeed: 1.4,
             laneSpread: 0.5,
         });
+        this.createMessageStream(74, 0, 190, 120, {
+            color: 0xffd98c,
+            count: 8,
+            radius: 2.0,
+            yOffset: 33,
+            zOffset: 2,
+            velocityBase: 0.85,
+            velocityStep: 0.03,
+            waveAmplitude: 0.21,
+            waveSpeed: 1.5,
+            laneSpread: 0.4,
+        });
+        this.createMessageStream(258, 0, 230, 78, {
+            color: 0xffe070,
+            count: 7,
+            radius: 2.0,
+            yOffset: 30,
+            zOffset: -12,
+            velocityBase: 0.82,
+            velocityStep: 0.03,
+            waveAmplitude: 0.2,
+            waveSpeed: 1.35,
+            laneSpread: 0.35,
+        });
+        this.createMessageStream(-344, 0, 198, 94, {
+            color: 0x8dd6ff,
+            count: 6,
+            radius: 1.9,
+            yOffset: 31,
+            zOffset: 0,
+            velocityBase: 0.8,
+            velocityStep: 0.03,
+            waveAmplitude: 0.18,
+            waveSpeed: 1.25,
+            laneSpread: 0.35,
+        });
     }
 
     createFlowParticles(x: number, y: number, z: number, length: number): void {

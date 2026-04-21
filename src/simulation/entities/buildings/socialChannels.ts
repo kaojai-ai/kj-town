@@ -64,11 +64,35 @@ export function createSocialChannels(
     const widgetSupport = new THREE.Mesh(new THREE.BoxGeometry(8, 26, 8), materials.partnerMetal);
     widgetSupport.position.set(0, size + 3, -gap);
 
-    group.add(line, facebook, instagram, webWidgetHub, widgetPortal, widgetSupport);
+    const lineAuthGate = new THREE.Mesh(new THREE.BoxGeometry(28, 18, 10), materials.glass);
+    lineAuthGate.position.set(-gap - 26, size * 0.55, 0);
+    lineAuthGate.castShadow = true;
+    const lineAuthRingPrimary = new THREE.Mesh(new THREE.TorusGeometry(9, 1.6, 10, 30), materials.lineGreen);
+    lineAuthRingPrimary.rotation.x = Math.PI / 2;
+    lineAuthRingPrimary.position.set(-gap - 12, size + 16, 0);
+    const lineAuthRingFallback = new THREE.Mesh(new THREE.TorusGeometry(9, 1.6, 10, 30), materials.pipeBlue);
+    lineAuthRingFallback.rotation.x = Math.PI / 2;
+    lineAuthRingFallback.position.set(-gap - 38, size + 16, 0);
+    const lineAuthBridge = new THREE.Mesh(new THREE.BoxGeometry(34, 2.2, 5), materials.pipeYellow);
+    lineAuthBridge.position.set(-gap - 26, size * 0.34, 0);
+
+    group.add(
+        line,
+        facebook,
+        instagram,
+        webWidgetHub,
+        widgetPortal,
+        widgetSupport,
+        lineAuthGate,
+        lineAuthRingPrimary,
+        lineAuthRingFallback,
+        lineAuthBridge
+    );
     group.position.set(x, y, z);
     group.userData = { isBuilding: true, name: 'Social Channels' };
 
     services.addLabel(group, 'Social Channels', 100);
     services.addLabel(webWidgetHub, 'Website Widget', 42);
+    services.addLabel(lineAuthGate, 'LINE Auth Failover', 28);
     scene.add(group);
 }

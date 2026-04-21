@@ -70,10 +70,39 @@ export function createKaojaiCore(
     const antBall = new THREE.Mesh(new THREE.SphereGeometry(12), featureMat);
     antBall.position.set(0, body.position.y + h / 2 + antStemH + 8, 0);
 
-    group.add(podium, body, eyeL, eyeRight, mouth, antStem, antBall);
+    const adminDeck = new THREE.Mesh(new THREE.BoxGeometry(96, 8, 42), materials.glass);
+    adminDeck.position.set(0, 26, 72);
+    adminDeck.castShadow = true;
+    const headerlessBar = new THREE.Mesh(new THREE.BoxGeometry(78, 4, 8), materials.partnerMetal);
+    headerlessBar.position.set(0, 35, 72);
+    const navColumnA = new THREE.Mesh(new THREE.BoxGeometry(10, 16, 8), materials.screenBlue);
+    navColumnA.position.set(-30, 22, 72);
+    const navColumnB = new THREE.Mesh(new THREE.BoxGeometry(10, 16, 8), materials.pipeYellow);
+    navColumnB.position.set(-14, 22, 72);
+    const contentGrid = new THREE.Mesh(new THREE.BoxGeometry(30, 14, 8), materials.screenAmber);
+    contentGrid.position.set(20, 22, 72);
+    const focusRail = new THREE.Mesh(new THREE.BoxGeometry(70, 2.2, 5), materials.pipeBlue);
+    focusRail.position.set(0, 14, 72);
+
+    group.add(
+        podium,
+        body,
+        eyeL,
+        eyeRight,
+        mouth,
+        antStem,
+        antBall,
+        adminDeck,
+        headerlessBar,
+        navColumnA,
+        navColumnB,
+        contentGrid,
+        focusRail
+    );
     group.position.set(x, y, z);
     group.userData = { isBuilding: true, name: 'KAOJAI Core' };
 
     services.addLabel(group, 'KaoJai.ai', 180);
+    services.addLabel(adminDeck, 'Clean Admin Deck', 24);
     scene.add(group);
 }

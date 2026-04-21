@@ -138,6 +138,27 @@ export function createChatConcourse(
     const sidePanelRailC = new THREE.Mesh(new THREE.BoxGeometry(26, 2.4, 4), materials.pipeRed);
     sidePanelRailC.position.set(64, 12, -24);
 
+    const adReferralDeck = new THREE.Mesh(new THREE.BoxGeometry(42, 16, 24), materials.glass);
+    adReferralDeck.position.set(-22, 16, 50);
+    adReferralDeck.castShadow = true;
+    const referralLens = new THREE.Mesh(new THREE.CylinderGeometry(6, 6, 16, 16), materials.screenAmber);
+    referralLens.position.set(-38, 12, 50);
+    const referralSignalRing = new THREE.Mesh(new THREE.TorusGeometry(10, 1.8, 10, 30), materials.pipeYellow);
+    referralSignalRing.rotation.x = Math.PI / 2;
+    referralSignalRing.position.set(-38, 24, 50);
+    const referralTimelineLane = new THREE.Mesh(new THREE.BoxGeometry(58, 2.2, 6), materials.pipeBlue);
+    referralTimelineLane.position.set(-14, 12, 50);
+    const sourceBeaconGeo = new THREE.SphereGeometry(3.2, 10, 10);
+    const sourceBeaconXs = [-32, -22, -12, -2];
+    sourceBeaconXs.forEach((sourceX, index) => {
+        const sourceBeacon = new THREE.Mesh(
+            sourceBeaconGeo,
+            index % 2 === 0 ? materials.screenAmber : materials.screenBlue
+        );
+        sourceBeacon.position.set(sourceX, 20, 50);
+        group.add(sourceBeacon);
+    });
+
     const podGeo = new THREE.SphereGeometry(4, 12, 12);
     const podPositions = [
         new THREE.Vector3(10, 22, -18),
@@ -194,7 +215,11 @@ export function createChatConcourse(
         sidePanelWing,
         sidePanelRailA,
         sidePanelRailB,
-        sidePanelRailC
+        sidePanelRailC,
+        adReferralDeck,
+        referralLens,
+        referralSignalRing,
+        referralTimelineLane
     );
 
     group.position.set(x, y, z);
@@ -211,5 +236,6 @@ export function createChatConcourse(
     services.addLabel(insightTower, 'Sentiment & Notes', 34);
     services.addLabel(feedbackLoop, 'AI Feedback Loop', 24);
     services.addLabel(sidePanelWing, 'AI Side Panel', 30);
+    services.addLabel(adReferralDeck, 'Ad Referral Context', 24);
     scene.add(group);
 }
