@@ -1,7 +1,7 @@
 # KJ Town
 
 > ### Live Demo
-> Visit the KJ-Town here: [https://kj-town.kaojai.ai/](https://kj-town.kaojai.ai/)
+> Visit the **KJ-Town** here: [https://town.kaojai.ai/](https://town.kaojai.ai/)
 
 Auto-generates a 3D town from your system architecture and microservices. Build. Ship. Watch the town evolve 🚀✨
 
