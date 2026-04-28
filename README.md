@@ -5,7 +5,6 @@
 
 Auto-generates a 3D town from your system architecture and microservices. Build. Ship. Watch the town evolve 🚀✨
 
-![KJ Town](/docs/images/kj-town.png)
 ![KJ Town WebGL](/docs/images/kj-town-webgl.png)
 
 ## Status
@@ -35,3 +34,5 @@ We use AI to solve business problems fast, accurately, and at a super competitiv
 ## License
 
 MIT
+
+![KJ Town](/docs/images/kj-town.png)
