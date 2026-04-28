@@ -1,9 +1,17 @@
 name: Deploy static site to S3 + Invalidate CF
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.workflow_run.head_branch || github.ref }}
+  cancel-in-progress: true
+
 on:
   # push: # IN PROGRESS
   #   branches: [main]
   workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
 
 jobs:
   deploy:
@@ -12,7 +20,7 @@ jobs:
 
     env:
       BUCKET: ${{ vars.AWS_S3_BUCKET }}
-      REGION: ${{ vars.AWS_REGION }}
+      AWS_REGION: ${{ vars.AWS_REGION }}
       DIST_ID: ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }}
 
     steps:
@@ -36,12 +44,37 @@ jobs:
       - name: Build static site
         run: pnpm run build
 
-      - name: Configure AWS creds
+      - name: Ensure AWS deployment config is present
+        env:
+          AWS_ACCESS_KEY_ID: ${{ vars.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: |
+          if [ -z "${BUCKET}" ]; then
+            echo "BUCKET is not set" >&2
+            exit 1
+          fi
+
+          if [ -z "${AWS_REGION}" ]; then
+            echo "AWS_REGION is not set" >&2
+            exit 1
+          fi
+
+          if [ -z "${AWS_ACCESS_KEY_ID}" ]; then
+            echo "AWS_ACCESS_KEY_ID is not set" >&2
+            exit 1
+          fi
+
+          if [ -z "${AWS_SECRET_ACCESS_KEY}" ]; then
+            echo "AWS_SECRET_ACCESS_KEY is not set" >&2
+            exit 1
+          fi
+
+      - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ vars.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.REGION }}
+          aws-region: ${{ env.AWS_REGION }}
 
       - name: Sync static assets (non-HTML)
         run: |
