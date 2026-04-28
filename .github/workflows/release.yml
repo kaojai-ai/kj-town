@@ -46,8 +46,8 @@ jobs:
 
       - name: Ensure AWS deployment config is present
         env:
-          AWS_ACCESS_KEY_ID: ${{ vars.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_ACCESS_KEY_ID: ${{ vars.AWS_GITHUB_PUBLIC_REPO_DEPLOYMENT_ACCESS_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_GITHUB_PUBLIC_REPO_DEPLOYMENT_SECRET }}
         run: |
           if [ -z "${BUCKET}" ]; then
             echo "BUCKET is not set" >&2
@@ -72,8 +72,8 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id: ${{ vars.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-access-key-id: ${{ vars.AWS_GITHUB_PUBLIC_REPO_DEPLOYMENT_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_GITHUB_PUBLIC_REPO_DEPLOYMENT_SECRET }}
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Sync static assets (non-HTML)
