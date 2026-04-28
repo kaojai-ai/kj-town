@@ -28,6 +28,10 @@ export function createPaths(scene: THREE.Scene, materials: MaterialPalette): voi
         { w: 34, h: 132, x: -80, z: 292 },
         { w: 150, h: 22, x: 16, z: 306 },
         { w: 124, h: 20, x: -198, z: 290 },
+        { w: 236, h: 26, x: -80, z: 405 },
+        { w: 30, h: 82, x: -154, z: 374 },
+        { w: 30, h: 92, x: 58, z: 378 },
+        { w: 142, h: 18, x: -12, z: 438 },
     ];
 
     pathConfig.forEach((path) => {

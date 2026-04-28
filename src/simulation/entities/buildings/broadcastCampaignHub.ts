@@ -107,6 +107,100 @@ export function createBroadcastCampaignHub(
     chatBridge.position.set(-28, 18, 42);
     chatBridge.rotation.y = Math.PI / 12;
 
+    const reliabilitySpine = new THREE.Mesh(new THREE.BoxGeometry(230, 10, 28), materials.concrete);
+    reliabilitySpine.position.set(8, 10, 88);
+    reliabilitySpine.receiveShadow = true;
+
+    const throttleCanal = new THREE.Mesh(new THREE.BoxGeometry(210, 4, 9), materials.pipeYellow);
+    throttleCanal.position.set(2, 23, 88);
+
+    const meteringTicksGeo = new THREE.BoxGeometry(3, 14, 13);
+    for (let i = 0; i < 13; i++) {
+        const tick = new THREE.Mesh(meteringTicksGeo, i % 3 === 0 ? materials.pipeRed : materials.partnerMetal);
+        tick.position.set(-92 + i * 16, 25, 88);
+        tick.castShadow = true;
+        group.add(tick);
+    }
+
+    const throttleFlywheel = new THREE.Mesh(new THREE.TorusGeometry(21, 2.2, 12, 48), materials.screenAmber);
+    throttleFlywheel.rotation.y = Math.PI / 2;
+    throttleFlywheel.position.set(-108, 35, 88);
+    throttleFlywheel.userData = { spinAxis: 'z', spinSpeed: 1.35 };
+    services.registerAnimatedObject(throttleFlywheel);
+
+    const identityLoomDeck = new THREE.Mesh(new THREE.BoxGeometry(62, 8, 50), materials.partnerMetal);
+    identityLoomDeck.position.set(-120, 12, 44);
+
+    const identityLedger = new THREE.Mesh(new THREE.BoxGeometry(38, 28, 8), materials.screenBlue);
+    identityLedger.position.set(-120, 29, 20);
+    identityLedger.castShadow = true;
+
+    const identityLoomPinsGeo = new THREE.CylinderGeometry(2.5, 2.5, 26, 10);
+    [-136, -120, -104].forEach((pinX, index) => {
+        const pin = new THREE.Mesh(identityLoomPinsGeo, index === 1 ? materials.pipeYellow : materials.pipeBlue);
+        pin.position.set(pinX, 28, 44);
+        pin.castShadow = true;
+        group.add(pin);
+    });
+
+    const consentGate = new THREE.Mesh(new THREE.TorusGeometry(13, 1.7, 10, 34), materials.pipeBlue);
+    consentGate.rotation.x = Math.PI / 2;
+    consentGate.position.set(-86, 30, 44);
+    consentGate.userData = { spinAxis: 'z', spinSpeed: -0.8 };
+    services.registerAnimatedObject(consentGate);
+
+    const duplicateLedger = new THREE.Mesh(new THREE.BoxGeometry(44, 18, 28), materials.glass);
+    duplicateLedger.position.set(18, 22, 118);
+    duplicateLedger.castShadow = true;
+
+    const duplicateSeal = new THREE.Mesh(new THREE.TorusGeometry(12, 1.8, 10, 36), materials.pipeRed);
+    duplicateSeal.rotation.x = Math.PI / 2;
+    duplicateSeal.position.set(18, 34, 118);
+    duplicateSeal.userData = { spinAxis: 'z', spinSpeed: 0.65 };
+    services.registerAnimatedObject(duplicateSeal);
+
+    const retryGarden = new THREE.Mesh(new THREE.BoxGeometry(72, 7, 42), materials.concrete);
+    retryGarden.position.set(88, 10, 94);
+
+    const retryCoilGeo = new THREE.TorusGeometry(9, 1.6, 10, 30);
+    [68, 88, 108].forEach((coilX, index) => {
+        const retryCoil = new THREE.Mesh(retryCoilGeo, index === 1 ? materials.pipeYellow : materials.pipeBlue);
+        retryCoil.rotation.x = Math.PI / 2;
+        retryCoil.position.set(coilX, 25 + index * 3, 94);
+        retryCoil.userData = { spinAxis: 'z', spinSpeed: 0.55 + index * 0.18 };
+        services.registerAnimatedObject(retryCoil);
+        group.add(retryCoil);
+    });
+
+    const deadLetterDock = new THREE.Mesh(new THREE.BoxGeometry(34, 18, 26), materials.partnerMetal);
+    deadLetterDock.position.set(124, 20, 118);
+    deadLetterDock.castShadow = true;
+
+    const alertLens = new THREE.Mesh(new THREE.SphereGeometry(6, 14, 14), materials.pipeRed);
+    alertLens.position.set(124, 34, 118);
+    alertLens.userData = { bobAmplitude: 1.4, bobSpeed: 2.2, bobBaseY: 34 };
+    services.registerAnimatedObject(alertLens);
+
+    const deliveryCombiner = new THREE.Mesh(new THREE.CylinderGeometry(8, 13, 34, 5), materials.screenAmber);
+    deliveryCombiner.rotation.z = Math.PI / 2;
+    deliveryCombiner.position.set(128, 28, 88);
+    deliveryCombiner.castShadow = true;
+
+    const channelFanRailA = new THREE.Mesh(new THREE.BoxGeometry(78, 2.4, 5), materials.lineGreen);
+    channelFanRailA.position.set(164, 22, 72);
+    channelFanRailA.rotation.y = -Math.PI / 10;
+    const channelFanRailB = new THREE.Mesh(new THREE.BoxGeometry(82, 2.4, 5), materials.fbBlue);
+    channelFanRailB.position.set(166, 28, 88);
+    const channelFanRailC = new THREE.Mesh(new THREE.BoxGeometry(78, 2.4, 5), materials.instaPink);
+    channelFanRailC.position.set(164, 22, 104);
+    channelFanRailC.rotation.y = Math.PI / 10;
+
+    const campaignClock = new THREE.Mesh(new THREE.CylinderGeometry(11, 11, 8, 24), materials.screenBlue);
+    campaignClock.rotation.x = Math.PI / 2;
+    campaignClock.position.set(-34, 51, 0);
+    campaignClock.userData = { spinAxis: 'z', spinSpeed: 0.5 };
+    services.registerAnimatedObject(campaignClock);
+
     group.add(
         base,
         campaignHall,
@@ -128,7 +222,23 @@ export function createBroadcastCampaignHub(
         smoothingGate,
         outputFan,
         crmBridge,
-        chatBridge
+        chatBridge,
+        reliabilitySpine,
+        throttleCanal,
+        throttleFlywheel,
+        identityLoomDeck,
+        identityLedger,
+        consentGate,
+        duplicateLedger,
+        duplicateSeal,
+        retryGarden,
+        deadLetterDock,
+        alertLens,
+        deliveryCombiner,
+        channelFanRailA,
+        channelFanRailB,
+        channelFanRailC,
+        campaignClock
     );
 
     group.position.set(x, y, z);
@@ -139,5 +249,10 @@ export function createBroadcastCampaignHub(
     services.addLabel(filterPrism, 'Audience Filter', 34);
     services.addLabel(queueBuffer, 'Campaign Queue Buffer', 44);
     services.addLabel(reliabilityDeck, 'Reliable Delivery Workers', 34);
+    services.addLabel(identityLedger, 'Audience Identity Loom', 40);
+    services.addLabel(throttleFlywheel, 'Send Rate Smoother', 34);
+    services.addLabel(duplicateLedger, 'Duplicate Guard', 34);
+    services.addLabel(retryGarden, 'Retry Garden', 26);
+    services.addLabel(deadLetterDock, 'Dead-letter Dock', 30);
     scene.add(group);
 }

@@ -21,6 +21,7 @@ export class CityBuilder {
     private scene: THREE.Scene;
     private particles: THREE.Mesh[];
     private mixers: THREE.AnimationMixer[];
+    private animatedObjects: THREE.Object3D[];
     private clock: THREE.Clock;
     private materials: MaterialPalette;
     private services: CityServices;
@@ -29,9 +30,15 @@ export class CityBuilder {
         this.scene = scene;
         this.particles = [];
         this.mixers = [];
+        this.animatedObjects = [];
         this.clock = new THREE.Clock();
         this.materials = createMaterialPalette();
-        this.services = { addLabel };
+        this.services = {
+            addLabel,
+            registerAnimatedObject: (object: THREE.Object3D) => {
+                this.animatedObjects.push(object);
+            },
+        };
     }
 
     build(): void {
@@ -220,6 +227,42 @@ export class CityBuilder {
             waveSpeed: 1.55,
             laneSpread: 0.42,
         });
+        this.createMessageStream(-80, 0, 405, 210, {
+            color: 0xfff0a8,
+            count: 24,
+            radius: 1.75,
+            yOffset: 54,
+            zOffset: 0,
+            velocityBase: 0.72,
+            velocityStep: 0.025,
+            waveAmplitude: 0.16,
+            waveSpeed: 1.05,
+            laneSpread: 0.7,
+        });
+        this.createMessageStream(-132, 0, 386, 96, {
+            color: 0x82c7ff,
+            count: 9,
+            radius: 1.65,
+            yOffset: 44,
+            zOffset: 0,
+            velocityBase: 0.68,
+            velocityStep: 0.02,
+            waveAmplitude: 0.18,
+            waveSpeed: 1.1,
+            laneSpread: 0.36,
+        });
+        this.createMessageStream(32, 0, 388, 126, {
+            color: 0xffa0a0,
+            count: 10,
+            radius: 1.7,
+            yOffset: 46,
+            zOffset: 8,
+            velocityBase: 0.78,
+            velocityStep: 0.025,
+            waveAmplitude: 0.2,
+            waveSpeed: 1.2,
+            laneSpread: 0.4,
+        });
     }
 
     createFlowParticles(x: number, y: number, z: number, length: number): void {
@@ -271,6 +314,22 @@ export class CityBuilder {
                 const waveSpeed = particle.userData.waveSpeed ?? 1;
                 const waveAmplitude = particle.userData.waveAmplitude ?? 0;
                 particle.position.z = particle.userData.baseZ + Math.cos(elapsed * waveSpeed + phase) * waveAmplitude * 0.25;
+            }
+        });
+
+        this.animatedObjects.forEach((object) => {
+            const spinSpeed = object.userData.spinSpeed ?? 0;
+            const bobAmplitude = object.userData.bobAmplitude ?? 0;
+            const bobSpeed = object.userData.bobSpeed ?? 1;
+            const bobBaseY = object.userData.bobBaseY ?? object.position.y;
+
+            if (spinSpeed !== 0) {
+                const axis = object.userData.spinAxis ?? 'y';
+                object.rotation[axis as 'x' | 'y' | 'z'] += spinSpeed * delta;
+            }
+
+            if (bobAmplitude !== 0) {
+                object.position.y = bobBaseY + Math.sin(elapsed * bobSpeed + (object.userData.phase ?? 0)) * bobAmplitude;
             }
         });
     }
