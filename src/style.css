@@ -1,125 +1,418 @@
-body {
+:root {
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    color: #14252f;
+    background: #dcecf8;
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+    width: 100%;
+    height: 100%;
     margin: 0;
     overflow: hidden;
-    background-color: #1a1a2e;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    color: white;
 }
 
-#info {
+button {
+    font: inherit;
+}
+
+.app-shell {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    background: #dcecf8;
+}
+
+.app-shell canvas {
+    display: block;
+    width: 100vw !important;
+    height: 100vh !important;
+}
+
+.webgl-fallback {
+    display: grid;
+    min-height: 100vh;
+    place-items: center;
+    color: #14252f;
+    background: #e8f4ff;
+}
+
+.top-left-overlay {
     position: absolute;
-    top: 10px;
-    left: 10px;
-    background: rgba(0, 0, 0, 0.7);
-    padding: 15px;
+    top: 18px;
+    left: 18px;
+    z-index: 10;
+    display: grid;
+    gap: 10px;
+    justify-items: start;
+    max-width: min(340px, calc(100vw - 36px));
+}
+
+.health-strip,
+.interaction-prompt,
+.movement-hint,
+.detail-panel {
+    position: absolute;
+    z-index: 10;
+    color: #14252f;
+}
+
+.github-link {
+    display: inline-flex;
+    min-height: 38px;
+    align-items: center;
+    gap: 9px;
+    padding: 8px 11px;
+    border: 1px solid rgb(255 255 255 / 72%);
     border-radius: 8px;
-    pointer-events: none;
-    z-index: 100;
+    color: #17323d;
+    text-decoration: none;
+    background: rgb(255 255 255 / 76%);
+    box-shadow: 0 14px 34px rgb(20 37 47 / 12%);
+    backdrop-filter: blur(14px);
 }
 
-#info p {
-    line-height: 1.5em;
+.github-link:hover {
+    background: #ffffff;
 }
 
-h1 {
-    margin: 0 0 5px 0;
-    font-size: 1.5em;
-    color: #4ade80;
+.github-link svg {
+    width: 18px;
+    height: 18px;
+    fill: currentColor;
+    flex: 0 0 auto;
 }
 
-p {
-    margin: 5px 0;
-    font-size: 0.9em;
-    color: #ccc;
+.github-link span {
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1;
 }
 
-#info a {
-    color: white;
-    pointer-events: auto;
+.objective-chip {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    width: 100%;
+    padding: 11px 13px;
+    border: 1px solid rgb(255 255 255 / 72%);
+    border-radius: 8px;
+    background: rgb(255 255 255 / 76%);
+    box-shadow: 0 14px 34px rgb(20 37 47 / 13%);
+    backdrop-filter: blur(14px);
+}
+
+.objective-chip strong {
+    font-size: 15px;
+    letter-spacing: 0;
+}
+
+.objective-chip span,
+.health-strip span,
+.movement-hint {
+    font-size: 12px;
+    line-height: 1.35;
+    color: #49616d;
+}
+
+a,
+.objective-chip a,
+.core-link-section a,
+.core-inline-links a {
+    color: #11BAA6;
+    font-weight: 800;
     text-decoration: none;
 }
 
-#info a:hover {
+a:hover,
+.objective-chip a:hover,
+.core-link-section a:hover,
+.core-inline-links a:hover {
     text-decoration: underline;
 }
 
-#github-badge {
-    position: absolute;
-    top: 20px;
-    right: 20px;
+.health-strip {
+    top: 18px;
+    right: 18px;
     display: flex;
     align-items: center;
-    background-color: rgba(0, 0, 0, 0.7);
-    color: white;
-    text-decoration: none;
-    padding: 10px 15px;
+    gap: 13px;
+    max-width: calc(100vw - 36px);
+    padding: 10px 12px;
+    border: 1px solid rgb(255 255 255 / 70%);
     border-radius: 8px;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
-    transition: background-color 0.2s, transform 0.2s;
-    z-index: 1000;
+    background: rgb(255 255 255 / 72%);
+    box-shadow: 0 14px 34px rgb(20 37 47 / 12%);
+    backdrop-filter: blur(14px);
 }
 
-#github-badge:hover {
-    background-color: rgba(0, 0, 0, 0.9);
-    transform: scale(1.05);
-}
-
-#github-badge svg.octicon-mark-github {
-    fill: white;
-    margin-right: 15px;
-    width: 40px;
-    height: 40px;
-}
-
-#github-badge .text-container {
-    display: flex;
-    flex-direction: column;
-}
-
-#github-badge .repo-name {
-    font-weight: bold;
-    font-size: 1.5em; /* Matches h1 size */
-    line-height: 1.2;
-}
-
-#github-badge .stars {
+.health-strip div {
     display: flex;
     align-items: center;
-    font-size: 0.9em;
-    color: #ccc;
-    margin-top: 2px;
+    gap: 7px;
 }
 
-#github-badge .stars svg {
-    fill: #ccc;
-    margin-right: 4px;
-    width: 14px;
-    height: 14px;
+.health-strip strong {
+    font-size: 13px;
 }
 
-/* Label styling if we use CSS2DRenderer */
-.label {
-    color: #fff;
-    font-family: sans-serif;
-    padding: 2px;
-    background: rgba(0, 0, 0, 0.6);
-    font-size: 10px;
-    border-radius: 4px;
-    pointer-events: none;
-    text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
+.status-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 999px;
+    background: #10b981;
+    box-shadow: 0 0 0 5px rgb(16 185 129 / 14%);
 }
 
-@media (max-width: 768px) {
-    #github-badge {
-        top: auto;
-        right: auto;
-        bottom: 20px;
-        left: 50%;
-        transform: translateX(-50%);
+.interaction-prompt,
+.movement-hint {
+    left: 50%;
+    bottom: 24px;
+    transform: translateX(-50%);
+}
+
+.interaction-prompt {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 40px;
+    max-width: calc(100vw - 32px);
+    padding: 10px 13px;
+    border: 1px solid rgb(255 255 255 / 76%);
+    border-radius: 8px;
+    color: #0f2f38;
+    background: rgb(255 255 255 / 84%);
+    box-shadow: 0 18px 40px rgb(20 37 47 / 18%);
+    cursor: pointer;
+    backdrop-filter: blur(14px);
+}
+
+.interaction-prompt:hover {
+    background: #ffffff;
+}
+
+kbd {
+    display: inline-flex;
+    min-width: 24px;
+    height: 24px;
+    align-items: center;
+    justify-content: center;
+    padding: 0 7px;
+    border: 1px solid #bed0d8;
+    border-bottom-width: 2px;
+    border-radius: 5px;
+    color: #24404c;
+    background: #f7fbfd;
+    font-size: 12px;
+}
+
+.movement-hint {
+    padding: 9px 12px;
+    border-radius: 8px;
+    background: rgb(255 255 255 / 66%);
+    backdrop-filter: blur(12px);
+}
+
+.detail-panel {
+    top: 88px;
+    right: 18px;
+    width: min(400px, calc(100vw - 36px));
+    max-height: calc(100vh - 106px);
+    padding: 18px;
+    overflow: auto;
+    border: 1px solid rgb(255 255 255 / 24%);
+    border-radius: 8px;
+    color: #ffffff;
+    background: rgb(12 22 28 / 50%);
+    box-shadow: 0 22px 60px rgb(0 0 0 / 28%);
+    backdrop-filter: blur(8px);
+    animation: detail-panel-pop 180ms cubic-bezier(0.2, 0.9, 0.25, 1);
+}
+
+.panel-header {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 12px;
+}
+
+.panel-header h1 {
+    margin: 9px 0 8px;
+    font-size: 28px;
+    line-height: 1.05;
+    letter-spacing: 0;
+}
+
+.panel-header p {
+    margin: 0;
+    color: rgb(255 255 255 / 86%);
+    font-size: 14px;
+    line-height: 1.45;
+}
+
+.icon-button {
+    width: 32px;
+    height: 32px;
+    border: 1px solid rgb(255 255 255 / 24%);
+    border-radius: 7px;
+    color: #ffffff;
+    background: rgb(255 255 255 / 14%);
+    cursor: pointer;
+}
+
+.icon-button:hover {
+    background: rgb(255 255 255 / 22%);
+}
+
+.tier-badge {
+    display: inline-flex;
+    align-items: center;
+    min-height: 24px;
+    padding: 4px 8px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.tier-foundation {
+    color: #063d38;
+    background: #c9fff5;
+}
+
+.tier-critical {
+    color: #573300;
+    background: #fff0bc;
+}
+
+.tier-business {
+    color: #06314b;
+    background: #dcefff;
+}
+
+.tier-edge {
+    color: #552c00;
+    background: #ffe5be;
+}
+
+.detail-list {
+    display: grid;
+    gap: 10px;
+    margin: 18px 0;
+}
+
+.detail-list div,
+.panel-section {
+    padding: 12px;
+    border: 1px solid rgb(255 255 255 / 16%);
+    border-radius: 8px;
+    background: rgb(255 255 255 / 10%);
+}
+
+.detail-list dt,
+.panel-section h2 {
+    margin: 0 0 6px;
+    color: rgb(255 255 255 / 78%);
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.detail-list dd {
+    margin: 0;
+    color: rgb(255 255 255 / 88%);
+    font-size: 13px;
+    line-height: 1.45;
+}
+
+.panel-section {
+    margin-top: 10px;
+}
+
+.panel-section ul {
+    display: grid;
+    gap: 7px;
+    margin: 0;
+    padding-left: 18px;
+}
+
+.panel-section li {
+    color: rgb(255 255 255 / 88%);
+    font-size: 13px;
+    line-height: 1.42;
+}
+
+.core-link-section p,
+.core-inline-links p {
+    margin: 0;
+    color: rgb(255 255 255 / 84%);
+    font-size: 13px;
+    line-height: 1.45;
+}
+
+.core-inline-links {
+    display: grid;
+    gap: 4px;
+    margin-top: 10px;
+}
+
+@keyframes detail-panel-pop {
+    from {
+        opacity: 0;
+        transform: translateY(10px) scale(0.98);
     }
 
-    #github-badge:hover {
-        transform: translateX(-50%) scale(1.05);
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@media (max-width: 840px) {
+    .health-strip {
+        display: none;
+    }
+
+    .top-left-overlay {
+        top: 12px;
+        left: 12px;
+        right: 12px;
+        max-width: calc(100vw - 24px);
+    }
+
+    .detail-panel {
+        top: 12px;
+        right: 10px;
+        bottom: auto;
+        left: 10px;
+        width: auto;
+        height: auto;
+        max-height: calc(100vh - 24px);
+    }
+
+    .hud-panel-open .top-left-overlay,
+    .hud-panel-open .movement-hint,
+    .hud-panel-open .interaction-prompt {
+        display: none;
+    }
+
+    .panel-header h1 {
+        font-size: 22px;
+    }
+
+    .interaction-prompt,
+    .movement-hint {
+        width: max-content;
+        max-width: calc(100vw - 24px);
+        bottom: 20px;
     }
 }
