@@ -10,6 +10,7 @@ import { createShops } from '../entities/buildings/shops';
 import { createPartnerExchange } from '../entities/buildings/partnerExchange';
 import { createNotificationHub } from '../entities/buildings/notificationHub';
 import { createChatConcourse } from '../entities/buildings/chatConcourse';
+import { createBroadcastCampaignHub } from '../entities/buildings/broadcastCampaignHub';
 import { createEventBus } from '../entities/microservices/eventBus';
 import { createFlowParticles as createFlowParticlesEntity, createMessageStream } from '../entities/microservices/flowParticles';
 import { createMaterialPalette } from '../providers/materialProvider';
@@ -42,6 +43,7 @@ export class CityBuilder {
         createAILab(this.scene, this.materials, this.services, 300, 0, -100);
         createSocialChannels(this.scene, this.materials, this.services, -300, 0, 200);
         createChatConcourse(this.scene, this.materials, this.services, 120, 0, 140);
+        createBroadcastCampaignHub(this.scene, this.materials, this.services, -80, 0, 350);
         createShops(this.scene, this.materials, this.services, 0, 0, 250);
         createPartnerExchange(this.scene, this.materials, this.services, 220, 0, 260);
         createNotificationHub(this.scene, this.materials, this.services, -180, 0, 120);
@@ -181,6 +183,42 @@ export class CityBuilder {
             waveAmplitude: 0.18,
             waveSpeed: 1.25,
             laneSpread: 0.35,
+        });
+        this.createMessageStream(-80, 0, 322, 112, {
+            color: 0xffcc44,
+            count: 12,
+            radius: 2.0,
+            yOffset: 43,
+            zOffset: -24,
+            velocityBase: 0.92,
+            velocityStep: 0.03,
+            waveAmplitude: 0.24,
+            waveSpeed: 1.45,
+            laneSpread: 0.5,
+        });
+        this.createMessageStream(-18, 0, 350, 172, {
+            color: 0x9fdcff,
+            count: 18,
+            radius: 2.1,
+            yOffset: 50,
+            zOffset: 4,
+            velocityBase: 1.4,
+            velocityStep: 0.04,
+            waveAmplitude: 0.28,
+            waveSpeed: 1.8,
+            laneSpread: 0.58,
+        });
+        this.createMessageStream(-150, 0, 350, 138, {
+            color: 0xff8f8f,
+            count: 10,
+            radius: 1.9,
+            yOffset: 40,
+            zOffset: 36,
+            velocityBase: 1.05,
+            velocityStep: 0.04,
+            waveAmplitude: 0.22,
+            waveSpeed: 1.55,
+            laneSpread: 0.42,
         });
     }
 

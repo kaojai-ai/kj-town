@@ -1,5 +1,5 @@
-1776748838
-- Added an Ad Referral Context observatory in Chat Concourse so source metadata is visible directly on the chat timeline lane.
-- Built a Daily Invoice Engine in Partner Sync with scheduler clock, invoice press, and automated payout rail to represent end-of-cycle daily billing.
-- Upgraded KaoJai Core with a cleaner headerless admin deck and added LINE Auth Failover gates in Social Channels for more reliable sign-in flow.
-- Extended roads and lightweight data streams to connect the new billing, chat-origin, and authentication structures.
+1777354825
+- Added a Broadcast Campaign Hub beside the chat district for targeted customer-group messaging.
+- Built audience segment silos for booked-recently guests, last-month check-ins, and recent contacts.
+- Added campaign queue buffering, redundant delivery worker towers, and smoothing rails for steadier large-volume sends.
+- Extended roads and animated message streams between chat, social delivery channels, and the new broadcast yard.
