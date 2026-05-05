@@ -84,6 +84,10 @@ export function TownWorld({
         keyboardNavigating: false,
     });
     const [arrivalEntityId, setArrivalEntityId] = useState<string | null>(null);
+    const [travelTargetPosition, setTravelTargetPosition] = useState<Vec3 | null>(null);
+    const [groundCursorPosition, setGroundCursorPosition] = useState<Vec3 | null>(null);
+    const [groundClickEffect, setGroundClickEffect] = useState<GroundClickEffect | null>(null);
+    const groundClickEffectIdRef = useRef(0);
     const arrivalTimeoutRef = useRef<number | null>(null);
 
     useEffect(() => {
@@ -110,12 +114,60 @@ export function TownWorld({
         [setSelectedEntityId]
     );
 
+    const clearArrivalFeedback = useCallback(() => {
+        if (arrivalTimeoutRef.current !== null) {
+            window.clearTimeout(arrivalTimeoutRef.current);
+            arrivalTimeoutRef.current = null;
+        }
+
+        setArrivalEntityId(null);
+    }, []);
+
+    const handleEntityTravel = useCallback(
+        (entityId: string) => {
+            clearArrivalFeedback();
+            setTravelTargetPosition(null);
+            setTravelTargetEntityId(entityId);
+        },
+        [clearArrivalFeedback, setTravelTargetEntityId]
+    );
+
+    const handleGroundTravel = useCallback(
+        (position: Vec3) => {
+            clearArrivalFeedback();
+            setSelectedEntityId(null);
+            setTravelTargetEntityId(null);
+            setTravelTargetPosition(position);
+            setGroundClickEffect({
+                id: groundClickEffectIdRef.current,
+                position,
+            });
+            groundClickEffectIdRef.current += 1;
+        },
+        [clearArrivalFeedback, setSelectedEntityId, setTravelTargetEntityId]
+    );
+
     return (
         <>
             <SkyBackdrop />
             <SceneLighting />
             <VisualizerCameraControls playerCameraRef={playerCameraRef} />
             <Terrain />
+            <GroundTravelPlane
+                onCursorMove={setGroundCursorPosition}
+                onCursorLeave={() => setGroundCursorPosition(null)}
+                onTravel={handleGroundTravel}
+            />
+            <GroundTravelCursor position={groundCursorPosition} />
+            {groundClickEffect ? (
+                <GroundTravelClickEffect
+                    key={groundClickEffect.id}
+                    effect={groundClickEffect}
+                    onComplete={(effectId) => {
+                        setGroundClickEffect((currentEffect) => currentEffect?.id === effectId ? null : currentEffect);
+                    }}
+                />
+            ) : null}
             <DistantScenery />
             <LivingLandDetails />
             <CloudLayer />
@@ -131,7 +183,7 @@ export function TownWorld({
                     selected={entity.id === selectedEntityId}
                     targeted={entity.id === travelTargetEntityId}
                     arriving={entity.id === arrivalEntityId}
-                    onTravel={setTravelTargetEntityId}
+                    onTravel={handleEntityTravel}
                 />
             ))}
             <PlayerController
@@ -140,6 +192,8 @@ export function TownWorld({
                 playerCameraRef={playerCameraRef}
                 travelTargetEntityId={travelTargetEntityId}
                 setTravelTargetEntityId={setTravelTargetEntityId}
+                travelTargetPosition={travelTargetPosition}
+                setTravelTargetPosition={setTravelTargetPosition}
                 onArrive={handleArrival}
             />
         </>
@@ -234,6 +288,107 @@ function Terrain() {
                 <meshStandardMaterial color="#eef4ec" roughness={0.78} />
             </mesh>
         </>
+    );
+}
+
+interface GroundClickEffect {
+    id: number;
+    position: Vec3;
+}
+
+interface GroundTravelPlaneProps {
+    onCursorMove: (position: Vec3) => void;
+    onCursorLeave: () => void;
+    onTravel: (position: Vec3) => void;
+}
+
+function GroundTravelPlane({ onCursorMove, onCursorLeave, onTravel }: GroundTravelPlaneProps) {
+    const handlePointerMove = (event: ThreeEvent<PointerEvent>) => {
+        onCursorMove([event.point.x, 6, event.point.z]);
+    };
+
+    const handleClick = (event: ThreeEvent<MouseEvent>) => {
+        event.stopPropagation();
+        onTravel([event.point.x, 6, event.point.z]);
+    };
+
+    return (
+        <mesh
+            onClick={handleClick}
+            onPointerMove={handlePointerMove}
+            onPointerOut={onCursorLeave}
+            rotation={[-Math.PI / 2, 0, 0]}
+            position={[0, 0.08, 0]}
+        >
+            <planeGeometry args={[3600, 3200]} />
+            <meshBasicMaterial transparent opacity={0} depthWrite={false} />
+        </mesh>
+    );
+}
+
+function GroundTravelCursor({ position }: { position: Vec3 | null }) {
+    if (!position) {
+        return null;
+    }
+
+    return (
+        <group position={[position[0], 0.42, position[2]]}>
+            <mesh rotation={[-Math.PI / 2, 0, 0]}>
+                <ringGeometry args={[12, 16, 54]} />
+                <meshBasicMaterial color="#ffffff" transparent opacity={0.74} depthWrite={false} />
+            </mesh>
+            <mesh rotation={[-Math.PI / 2, 0, 0]}>
+                <ringGeometry args={[4.2, 5.6, 36]} />
+                <meshBasicMaterial color="#11baa6" transparent opacity={0.88} depthWrite={false} />
+            </mesh>
+        </group>
+    );
+}
+
+function GroundTravelClickEffect({ effect, onComplete }: { effect: GroundClickEffect; onComplete: (effectId: number) => void }) {
+    const ringRef = useRef<THREE.Mesh>(null);
+    const centerRef = useRef<THREE.Mesh>(null);
+    const startedAtRef = useRef<number | null>(null);
+    const completedRef = useRef(false);
+
+    useFrame((state) => {
+        startedAtRef.current ??= state.clock.elapsedTime;
+        const age = state.clock.elapsedTime - startedAtRef.current;
+        const opacity = Math.max(0, 1 - age / 0.7);
+
+        if (ringRef.current) {
+            ringRef.current.scale.setScalar(1 + age * 2.1);
+            const material = ringRef.current.material;
+            if (material instanceof THREE.MeshBasicMaterial) {
+                material.opacity = opacity;
+            }
+        }
+
+        if (centerRef.current) {
+            centerRef.current.scale.setScalar(Math.max(0.18, 1 - age * 0.45));
+            const material = centerRef.current.material;
+            if (material instanceof THREE.MeshBasicMaterial) {
+                material.opacity = Math.max(0, 0.9 - age);
+            }
+        }
+
+        if (age >= 0.72 && !completedRef.current) {
+            completedRef.current = true;
+            onComplete(effect.id);
+        }
+    });
+
+    return (
+        <group position={[effect.position[0], 0.5, effect.position[2]]}>
+            <mesh ref={ringRef} rotation={[-Math.PI / 2, 0, 0]}>
+                <ringGeometry args={[11, 15, 64]} />
+                <meshBasicMaterial color="#fff2a6" transparent opacity={1} depthWrite={false} />
+            </mesh>
+            <mesh ref={centerRef} rotation={[-Math.PI / 2, 0, 0]}>
+                <circleGeometry args={[5.2, 36]} />
+                <meshBasicMaterial color="#11baa6" transparent opacity={0.9} depthWrite={false} />
+            </mesh>
+        </group>
     );
 }
 
@@ -1638,6 +1793,8 @@ interface PlayerControllerProps {
     playerCameraRef: PlayerCameraRef;
     travelTargetEntityId: string | null;
     setTravelTargetEntityId: (entityId: string | null) => void;
+    travelTargetPosition: Vec3 | null;
+    setTravelTargetPosition: (position: Vec3 | null) => void;
     onArrive: (entityId: string) => void;
 }
 
@@ -1647,6 +1804,8 @@ function PlayerController({
     playerCameraRef,
     travelTargetEntityId,
     setTravelTargetEntityId,
+    travelTargetPosition,
+    setTravelTargetPosition,
     onArrive,
 }: PlayerControllerProps) {
     const bodyRef = useRef<RapierRigidBody>(null);
@@ -1685,6 +1844,10 @@ function PlayerController({
                 setTravelTargetEntityId(null);
             }
 
+            if (travelTargetPosition) {
+                setTravelTargetPosition(null);
+            }
+
             yawRef.current -= turnInput * delta * 2.4;
 
             const forward = new THREE.Vector3(-Math.sin(yawRef.current), 0, -Math.cos(yawRef.current));
@@ -1702,37 +1865,45 @@ function PlayerController({
             if (avatarRef.current) {
                 avatarRef.current.rotation.y = yawRef.current;
             }
-        } else if (travelTarget) {
-            const dx = travelTarget.position[0] - current[0];
-            const dz = travelTarget.position[2] - current[2];
-            const distance = Math.hypot(dx, dz);
-            const approachDistance = Math.max(travelTarget.size[0], travelTarget.size[2]) * 0.62 + 18;
+        } else {
+            const destination = travelTarget?.position ?? travelTargetPosition;
 
-            if (distance <= approachDistance) {
-                setTravelTargetEntityId(null);
-                onArrive(travelTarget.id);
-            } else if (distance > 0.001) {
-                const directionX = dx / distance;
-                const directionZ = dz / distance;
-                const speed = 136;
+            if (destination) {
+                const dx = destination[0] - current[0];
+                const dz = destination[2] - current[2];
+                const distance = Math.hypot(dx, dz);
+                const approachDistance = travelTarget ? Math.max(travelTarget.size[0], travelTarget.size[2]) * 0.62 + 18 : 10;
 
-                next = resolveBlockedPosition(
-                    [current[0] + directionX * speed * delta, 6, current[2] + directionZ * speed * delta],
-                    current,
-                    townEntities
-                );
-                positionRef.current = next;
-                yawRef.current = Math.atan2(-directionX, -directionZ);
+                if (distance <= approachDistance) {
+                    if (travelTarget) {
+                        setTravelTargetEntityId(null);
+                        onArrive(travelTarget.id);
+                    } else {
+                        setTravelTargetPosition(null);
+                    }
+                } else if (distance > 0.001) {
+                    const directionX = dx / distance;
+                    const directionZ = dz / distance;
+                    const speed = 136;
 
-                if (avatarRef.current) {
-                    avatarRef.current.rotation.y = yawRef.current;
+                    next = resolveBlockedPosition(
+                        [current[0] + directionX * speed * delta, 6, current[2] + directionZ * speed * delta],
+                        current,
+                        townEntities
+                    );
+                    positionRef.current = next;
+                    yawRef.current = Math.atan2(-directionX, -directionZ);
+
+                    if (avatarRef.current) {
+                        avatarRef.current.rotation.y = yawRef.current;
+                    }
                 }
             }
         }
 
         playerCameraRef.current.position.set(positionRef.current[0], positionRef.current[1], positionRef.current[2]);
         playerCameraRef.current.yaw = yawRef.current;
-        playerCameraRef.current.keyboardNavigating = hasKeyboardInput || Boolean(travelTarget);
+        playerCameraRef.current.keyboardNavigating = hasKeyboardInput || Boolean(travelTarget) || Boolean(travelTargetPosition);
         bodyRef.current?.setNextKinematicTranslation({ x: positionRef.current[0], y: positionRef.current[1], z: positionRef.current[2] });
 
         const nearest = findNearestEntity(positionRef.current, townEntities, 58);
