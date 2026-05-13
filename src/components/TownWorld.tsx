@@ -642,14 +642,22 @@ function RoadNetwork() {
         [[0, 0, 0], [-300, 0, -360], 24],
         [[30, 0, 350], [120, 0, 460], 18],
         [[120, 0, 460], [235, 0, 520], 18],
+        [[120, 0, 460], [335, 0, 500], 14],
         [[30, 0, 350], [235, 0, 390], 18],
+        [[30, 0, 350], [110, 0, 285], 14],
+        [[30, 0, 350], [175, 0, 305], 14],
+        [[30, 0, 350], [-45, 0, 300], 14],
+        [[-50, 0, 590], [-165, 0, 610], 16],
         [[-420, 0, 120], [-530, 0, 20], 18],
         [[-420, 0, 120], [-575, 0, 165], 16],
+        [[-575, 0, 165], [-690, 0, 170], 13],
         [[-420, 0, 120], [-650, 0, 78], 16],
         [[-420, 0, 120], [-570, 0, 250], 16],
         [[-420, 0, 120], [-485, 0, 305], 16],
         [[420, 0, -230], [545, 0, -315], 16],
         [[420, 0, -230], [305, 0, -150], 16],
+        [[305, 0, -150], [230, 0, -235], 13],
+        [[-230, 0, 80], [-230, 0, 190], 14],
     ];
 
     return (
@@ -974,6 +982,18 @@ function BuildingShape({ entity, highlighted }: BuildingShapeProps) {
         return <BookingClub entity={entity} emissiveIntensity={emissiveIntensity} />;
     }
 
+    if (entity.id === 'booking-brand-studio') {
+        return <BookingBrandStudio entity={entity} emissiveIntensity={emissiveIntensity} />;
+    }
+
+    if (entity.id === 'booking-link-kiosk') {
+        return <BookingLinkKiosk entity={entity} emissiveIntensity={emissiveIntensity} />;
+    }
+
+    if (entity.id === 'admin-booking-desk') {
+        return <AdminBookingDesk entity={entity} emissiveIntensity={emissiveIntensity} />;
+    }
+
     if (entity.id === 'issue-management') {
         return <IssueCallCenter entity={entity} emissiveIntensity={emissiveIntensity} />;
     }
@@ -986,12 +1006,20 @@ function BuildingShape({ entity, highlighted }: BuildingShapeProps) {
         return <CheckSlipScanner entity={entity} emissiveIntensity={emissiveIntensity} />;
     }
 
+    if (entity.id === 'checkslip-partial-match') {
+        return <PartialMatchGate entity={entity} emissiveIntensity={emissiveIntensity} />;
+    }
+
     if (entity.id === 'billing-pricing') {
         return <BillingStation entity={entity} emissiveIntensity={emissiveIntensity} />;
     }
 
     if (entity.id === 'broadcast-campaigns') {
         return <BroadcastYard entity={entity} emissiveIntensity={emissiveIntensity} />;
+    }
+
+    if (entity.id === 'broadcast-media-gallery') {
+        return <BroadcastMediaGallery entity={entity} emissiveIntensity={emissiveIntensity} />;
     }
 
     if (entity.id === 'unified-inbox') {
@@ -1006,6 +1034,10 @@ function BuildingShape({ entity, highlighted }: BuildingShapeProps) {
         return <SocialLogoBuilding entity={entity} logo="line" emissiveIntensity={emissiveIntensity} />;
     }
 
+    if (entity.id === 'line-setup-wizard') {
+        return <LineSetupWizard entity={entity} emissiveIntensity={emissiveIntensity} />;
+    }
+
     if (entity.id === 'facebook-channel') {
         return <SocialLogoBuilding entity={entity} logo="facebook" emissiveIntensity={emissiveIntensity} />;
     }
@@ -1016,6 +1048,14 @@ function BuildingShape({ entity, highlighted }: BuildingShapeProps) {
 
     if (entity.id === 'lazada-channel') {
         return <SocialLogoBuilding entity={entity} logo="lazada" emissiveIntensity={emissiveIntensity} />;
+    }
+
+    if (entity.id === 'business-doc-vault') {
+        return <DocumentVault entity={entity} emissiveIntensity={emissiveIntensity} />;
+    }
+
+    if (entity.id === 'rag-stability-beacon') {
+        return <RagStabilityBeacon entity={entity} emissiveIntensity={emissiveIntensity} />;
     }
 
     if (entity.shape === 'citadel') {
@@ -1256,6 +1296,81 @@ function BookingClub({ entity, emissiveIntensity }: { entity: TownEntity; emissi
     );
 }
 
+function BookingBrandStudio({ entity, emissiveIntensity }: { entity: TownEntity; emissiveIntensity: number }) {
+    const swatches = ['#13b8a8', '#ffb25e', '#8bd3ff', '#ff6fa8', '#ffd05a'];
+
+    return (
+        <group>
+            <Platform entity={entity} emissiveIntensity={emissiveIntensity} />
+            <mesh castShadow position={[0, 48, -6]}>
+                <boxGeometry args={[56, 34, 6]} />
+                <meshStandardMaterial color="#fffdf4" roughness={0.36} metalness={0.04} />
+            </mesh>
+            {swatches.map((color, index) => (
+                <mesh key={color} castShadow position={[-24 + index * 12, 51, -1]}>
+                    <boxGeometry args={[8, 20, 4]} />
+                    <meshStandardMaterial color={color} emissive={color} emissiveIntensity={0.12 + emissiveIntensity * 0.3} roughness={0.3} />
+                </mesh>
+            ))}
+            <Text position={[0, 76, -1]} fontSize={14} color="#3b3154" anchorX="center" anchorY="middle">
+                Aa
+            </Text>
+            <mesh castShadow position={[28, 29, 24]} rotation={[0, 0, -0.25]}>
+                <cylinderGeometry args={[3, 3, 38, 12]} />
+                <meshStandardMaterial color="#6b7280" roughness={0.36} metalness={0.22} />
+            </mesh>
+            <mesh castShadow position={[35, 50, 24]} rotation={[0, 0, -0.25]}>
+                <coneGeometry args={[8, 18, 18]} />
+                <meshStandardMaterial color="#fff4c7" emissive="#ffd05a" emissiveIntensity={0.2} roughness={0.28} />
+            </mesh>
+        </group>
+    );
+}
+
+function BookingLinkKiosk({ entity, emissiveIntensity }: { entity: TownEntity; emissiveIntensity: number }) {
+    return (
+        <group>
+            <Gateway entity={entity} emissiveIntensity={emissiveIntensity} />
+            <mesh position={[0, 50, 7]} rotation={[Math.PI / 2, 0, 0]}>
+                <torusGeometry args={[20, 3.2, 12, 48, Math.PI * 1.6]} />
+                <meshStandardMaterial color="#ffffff" emissive="#4fc3ff" emissiveIntensity={0.48} roughness={0.28} />
+            </mesh>
+            <mesh position={[14, 50, 7]} rotation={[Math.PI / 2, 0, 0]}>
+                <torusGeometry args={[20, 3.2, 12, 48, Math.PI * 1.6]} />
+                <meshStandardMaterial color="#ffffff" emissive="#4fc3ff" emissiveIntensity={0.48} roughness={0.28} />
+            </mesh>
+            <mesh castShadow position={[0, 78, 0]}>
+                <boxGeometry args={[34, 10, 8]} />
+                <meshStandardMaterial color="#e8fbff" emissive="#4fc3ff" emissiveIntensity={0.16 + emissiveIntensity} roughness={0.22} />
+            </mesh>
+        </group>
+    );
+}
+
+function AdminBookingDesk({ entity, emissiveIntensity }: { entity: TownEntity; emissiveIntensity: number }) {
+    return (
+        <group>
+            <Shop entity={entity} emissiveIntensity={emissiveIntensity} />
+            <mesh castShadow position={[0, 30, 42]}>
+                <boxGeometry args={[42, 18, 8]} />
+                <meshStandardMaterial color="#263b46" emissive="#6ee7b7" emissiveIntensity={0.12 + emissiveIntensity} roughness={0.26} />
+            </mesh>
+            <mesh castShadow position={[-16, 45, 42]}>
+                <boxGeometry args={[10, 12, 6]} />
+                <meshStandardMaterial color="#f2fff9" roughness={0.3} />
+            </mesh>
+            <mesh castShadow position={[16, 45, 42]}>
+                <boxGeometry args={[10, 12, 6]} />
+                <meshStandardMaterial color="#ff8c9a" emissive="#ff8c9a" emissiveIntensity={0.12} roughness={0.3} />
+            </mesh>
+            <mesh position={[0, 60, 44]} rotation={[Math.PI / 2, 0, 0]}>
+                <torusGeometry args={[22, 2.1, 10, 42]} />
+                <meshStandardMaterial color="#6ee7b7" emissive="#6ee7b7" emissiveIntensity={0.46} />
+            </mesh>
+        </group>
+    );
+}
+
 function IssueCallCenter({ entity, emissiveIntensity }: { entity: TownEntity; emissiveIntensity: number }) {
     const desks = [-22, 0, 22];
     return (
@@ -1320,6 +1435,30 @@ function CheckSlipScanner({ entity, emissiveIntensity }: { entity: TownEntity; e
                 <torusGeometry args={[12, 2.4, 10, 34]} />
                 <meshStandardMaterial color="#ff4d6d" emissive="#ff4d6d" emissiveIntensity={0.45} />
             </mesh>
+            <mesh position={[-27, 46, 45]} rotation={[Math.PI / 2, 0, 0]}>
+                <torusGeometry args={[12, 2.4, 10, 34]} />
+                <meshStandardMaterial color="#ffd05a" emissive="#ffd05a" emissiveIntensity={0.42} />
+            </mesh>
+        </group>
+    );
+}
+
+function PartialMatchGate({ entity, emissiveIntensity }: { entity: TownEntity; emissiveIntensity: number }) {
+    return (
+        <group>
+            <Gateway entity={entity} emissiveIntensity={emissiveIntensity} />
+            <mesh position={[-8, 42, 6]} rotation={[Math.PI / 2, 0, 0]}>
+                <torusGeometry args={[19, 2.8, 12, 48]} />
+                <meshStandardMaterial color="#79f2c6" emissive="#13b8a8" emissiveIntensity={0.5} roughness={0.25} />
+            </mesh>
+            <mesh position={[8, 42, 8]} rotation={[Math.PI / 2, 0, 0]}>
+                <torusGeometry args={[13, 2.4, 12, 42]} />
+                <meshStandardMaterial color="#ffd05a" emissive="#ff9f43" emissiveIntensity={0.5 + emissiveIntensity} roughness={0.25} />
+            </mesh>
+            <mesh castShadow position={[0, 70, 0]}>
+                <boxGeometry args={[24, 7, 18]} />
+                <meshStandardMaterial color="#fff3dc" emissive="#ff9f43" emissiveIntensity={0.18} roughness={0.3} />
+            </mesh>
         </group>
     );
 }
@@ -1357,6 +1496,38 @@ function BroadcastYard({ entity, emissiveIntensity }: { entity: TownEntity; emis
             <mesh position={[0, 82, 12]} rotation={[Math.PI / 2, 0, 0]}>
                 <torusGeometry args={[58, 2.2, 10, 64]} />
                 <meshStandardMaterial color="#fff0b8" emissive="#ffd05a" emissiveIntensity={0.54} />
+            </mesh>
+            {[-28, 0, 28].map((x, index) => (
+                <mesh key={`media-slot-${x}`} castShadow position={[x, 29, 44]}>
+                    <boxGeometry args={[20, 16, 4]} />
+                    <meshStandardMaterial color={index === 0 ? '#fff9c4' : index === 1 ? '#e8fbff' : '#ffe1eb'} emissive={entity.color} emissiveIntensity={0.08} roughness={0.3} />
+                </mesh>
+            ))}
+        </group>
+    );
+}
+
+function BroadcastMediaGallery({ entity, emissiveIntensity }: { entity: TownEntity; emissiveIntensity: number }) {
+    const frameColors = ['#fff9c4', '#e8fbff', '#ffe1eb'];
+
+    return (
+        <group>
+            <Platform entity={entity} emissiveIntensity={emissiveIntensity} />
+            {frameColors.map((color, index) => (
+                <group key={color} position={[-24 + index * 24, 46, 10]}>
+                    <mesh castShadow>
+                        <boxGeometry args={[18, 22, 5]} />
+                        <meshStandardMaterial color={color} emissive={color} emissiveIntensity={0.1} roughness={0.34} />
+                    </mesh>
+                    <mesh position={[0, -2, 3.2]}>
+                        <planeGeometry args={[12, 10]} />
+                        <meshStandardMaterial color={index === 0 ? '#ff6fa8' : index === 1 ? '#4fc3ff' : '#ffd05a'} emissive={entity.color} emissiveIntensity={0.18} roughness={0.32} />
+                    </mesh>
+                </group>
+            ))}
+            <mesh position={[0, 72, 10]} rotation={[Math.PI / 2, 0, 0]}>
+                <torusGeometry args={[36, 2, 10, 48]} />
+                <meshStandardMaterial color="#ffffff" emissive="#ff8fb3" emissiveIntensity={0.42} />
             </mesh>
         </group>
     );
@@ -1410,6 +1581,29 @@ function InboxConcourse({ entity, emissiveIntensity }: { entity: TownEntity; emi
     );
 }
 
+function LineSetupWizard({ entity, emissiveIntensity }: { entity: TownEntity; emissiveIntensity: number }) {
+    return (
+        <group>
+            <Platform entity={entity} emissiveIntensity={emissiveIntensity} />
+            {[0, 1, 2].map((step) => (
+                <group key={step} position={[-22 + step * 22, 42 + step * 4, 5]}>
+                    <mesh castShadow>
+                        <cylinderGeometry args={[8, 10, 10, 18]} />
+                        <meshStandardMaterial color={step === 2 ? '#f0fff6' : '#22d96f'} emissive="#22d96f" emissiveIntensity={0.12 + step * 0.08} roughness={0.34} />
+                    </mesh>
+                    <Text position={[0, 1, 7]} fontSize={8} color={step === 2 ? '#06a84a' : '#ffffff'} anchorX="center" anchorY="middle">
+                        {String(step + 1)}
+                    </Text>
+                </group>
+            ))}
+            <mesh position={[0, 70, 0]} rotation={[Math.PI / 2, 0, 0]}>
+                <torusGeometry args={[32, 2.2, 12, 48]} />
+                <meshStandardMaterial color="#f0fff6" emissive="#22d96f" emissiveIntensity={0.42 + emissiveIntensity} />
+            </mesh>
+        </group>
+    );
+}
+
 function OrchestrationTower({ entity, emissiveIntensity }: { entity: TownEntity; emissiveIntensity: number }) {
     return (
         <group>
@@ -1424,6 +1618,56 @@ function OrchestrationTower({ entity, emissiveIntensity }: { entity: TownEntity;
                     <meshStandardMaterial color={index === 1 ? '#f7d66a' : '#13b8a8'} emissive={index === 1 ? '#f7d66a' : '#13b8a8'} emissiveIntensity={0.36} />
                 </mesh>
             ))}
+        </group>
+    );
+}
+
+function DocumentVault({ entity, emissiveIntensity }: { entity: TownEntity; emissiveIntensity: number }) {
+    return (
+        <group>
+            <Database entity={entity} emissiveIntensity={emissiveIntensity} />
+            <mesh castShadow position={[0, 45, 35]}>
+                <boxGeometry args={[36, 44, 7]} />
+                <meshStandardMaterial color="#f8fafc" emissive="#ffffff" emissiveIntensity={0.08} roughness={0.36} />
+            </mesh>
+            <Text position={[0, 51, 39]} fontSize={13} color="#5f6b7a" anchorX="center" anchorY="middle">
+                2025
+            </Text>
+            <mesh position={[0, 80, 0]} rotation={[Math.PI / 2, 0, 0]}>
+                <torusGeometry args={[29, 2.4, 10, 48]} />
+                <meshStandardMaterial color="#ffffff" emissive="#aeb8c6" emissiveIntensity={0.42} />
+            </mesh>
+        </group>
+    );
+}
+
+function RagStabilityBeacon({ entity, emissiveIntensity }: { entity: TownEntity; emissiveIntensity: number }) {
+    const beaconRef = useRef<THREE.Mesh>(null);
+
+    useFrame((state) => {
+        if (!beaconRef.current) {
+            return;
+        }
+
+        const pulse = 1 + Math.sin(state.clock.elapsedTime * 2.4) * 0.08;
+        beaconRef.current.scale.set(pulse, pulse, pulse);
+    });
+
+    return (
+        <group>
+            <Tower entity={entity} emissiveIntensity={emissiveIntensity} />
+            <mesh ref={beaconRef} position={[0, 86, 0]}>
+                <sphereGeometry args={[16, 24, 24]} />
+                <meshStandardMaterial color="#fff9d8" emissive="#ffd166" emissiveIntensity={0.78} transparent opacity={0.86} roughness={0.18} />
+            </mesh>
+            <mesh position={[0, 86, 0]} rotation={[Math.PI / 2, 0, 0]}>
+                <torusGeometry args={[34, 2.1, 10, 54]} />
+                <meshStandardMaterial color="#8bd3ff" emissive="#8bd3ff" emissiveIntensity={0.52} />
+            </mesh>
+            <mesh position={[0, 103, 0]} rotation={[Math.PI / 2, 0, 0]}>
+                <torusGeometry args={[22, 1.8, 10, 44]} />
+                <meshStandardMaterial color="#ffffff" emissive="#ffffff" emissiveIntensity={0.32} transparent opacity={0.7} />
+            </mesh>
         </group>
     );
 }
