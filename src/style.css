@@ -61,10 +61,18 @@ button {
 .health-strip,
 .interaction-prompt,
 .movement-hint,
-.detail-panel {
+.detail-panel,
+.changelog-dialog {
     position: absolute;
     z-index: 10;
     color: #14252f;
+}
+
+.top-link-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
 }
 
 .github-link {
@@ -97,6 +105,10 @@ button {
     font-size: 12px;
     font-weight: 700;
     line-height: 1;
+}
+
+.changelog-button {
+    cursor: pointer;
 }
 
 .objective-chip {
@@ -221,6 +233,54 @@ kbd {
     border-radius: 8px;
     background: rgb(255 255 255 / 66%);
     backdrop-filter: blur(12px);
+}
+
+.changelog-dialog {
+    left: 18px;
+    bottom: 24px;
+    width: min(520px, calc(100vw - 36px));
+    max-height: min(520px, calc(100vh - 160px));
+    padding: 18px;
+    overflow: auto;
+    border: 1px solid rgb(255 255 255 / 14%);
+    border-radius: 8px;
+    color: #ffffff;
+    background: rgb(6 10 13 / 88%);
+    box-shadow: 0 28px 72px rgb(0 0 0 / 42%);
+    backdrop-filter: blur(12px);
+    animation: detail-panel-pop 180ms cubic-bezier(0.2, 0.9, 0.25, 1);
+}
+
+.changelog-dialog-header {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 14px;
+    align-items: start;
+    margin-bottom: 14px;
+}
+
+.changelog-dialog-header span {
+    color: #11BAA6;
+    font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0;
+}
+
+.changelog-dialog h2 {
+    margin: 4px 0 0;
+    font-size: 22px;
+    line-height: 1.08;
+    letter-spacing: 0;
+}
+
+.changelog-dialog pre {
+    margin: 0;
+    white-space: pre-wrap;
+    color: rgb(255 255 255 / 88%);
+    font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+    font-size: 13px;
+    line-height: 1.52;
 }
 
 .detail-panel {
