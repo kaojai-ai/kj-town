@@ -85,13 +85,23 @@ jobs:
       - name: Build project
         run: pnpm run build
 
-      - name: Run tests (or fallback to typecheck)
+      - name: Run lint and tests
         shell: bash
         run: |
-          if pnpm run | grep -qE '^\s+test\b'; then
-            pnpm test
-          else
-            pnpm run typecheck
+          pnpm run lint &
+          lint_pid=$!
+
+          pnpm test &
+          test_pid=$!
+
+          lint_status=0
+          test_status=0
+
+          wait "$lint_pid" || lint_status=$?
+          wait "$test_pid" || test_status=$?
+
+          if [ "$lint_status" -ne 0 ] || [ "$test_status" -ne 0 ]; then
+            exit 1
           fi
 
       - name: Commit and push changes

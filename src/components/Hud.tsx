@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { TownEntity } from "../town/townData";
+import { getInitialChangelogOpenState } from "./changelogState";
 import lastMigrateRaw from "../../migrations/LAST_MIGRATE.md?raw";
 
 interface HudProps {
@@ -16,7 +17,6 @@ const tierLabels: Record<TownEntity["tier"], string> = {
   edge: "Edge",
 };
 
-const mobileChangelogQuery = "(max-width: 840px)";
 const lastMigrateContent = lastMigrateRaw.trim();
 
 export function Hud({
@@ -30,7 +30,7 @@ export function Hud({
       return true;
     }
 
-    return !window.matchMedia(mobileChangelogQuery).matches;
+    return getInitialChangelogOpenState(window.matchMedia);
   });
 
   return (
