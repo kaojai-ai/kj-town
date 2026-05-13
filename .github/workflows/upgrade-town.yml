@@ -2,6 +2,11 @@ name: Upgrade Town With Codex
 
 on:
   workflow_dispatch:
+    inputs:
+      changelog_date:
+        description: 'Changelog date to fetch in YYYY-MM-DD format. Leave blank to use today.'
+        required: false
+        type: string
   schedule:
     - cron: '30 4 * * 2'
 
@@ -35,16 +40,23 @@ jobs:
 
       - name: Fetch latest changelog
         shell: bash
+        env:
+          CHANGELOG_DATE: ${{ github.event.inputs.changelog_date || '' }}
         run: |
-          year="$(date +%Y)"
-          month="$(date +%m)"
-          today="$(date +%F)"
+          changelog_date="${CHANGELOG_DATE:-$(date +%F)}"
+          if [[ ! "${changelog_date}" =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}$ ]]; then
+            echo "Invalid changelog_date: ${changelog_date}. Expected YYYY-MM-DD."
+            exit 1
+          fi
+
+          year="${changelog_date:0:4}"
+          month="${changelog_date:5:2}"
           epoch="$(date +%s)"
 
-          url="https://blog.kaojai.ai/blog/${year}/${month}/changelog-${today}/llms.txt"
+          url="https://blog.kaojai.ai/blog/${year}/${month}/changelog-${changelog_date}/llms.txt"
           target_dir="migrations/${year}"
           tmp_file="$(mktemp)"
-          pattern="${target_dir}"/*_changelog-"${today}".md
+          pattern="${target_dir}"/*_changelog-"${changelog_date}".md
 
           mkdir -p "${target_dir}"
           curl -fsSL "${url}" -o "${tmp_file}"
@@ -59,7 +71,7 @@ jobs:
           done
           shopt -u nullglob
 
-          target_file="${target_dir}/${epoch}_changelog-${today}.md"
+          target_file="${target_dir}/${epoch}_changelog-${changelog_date}.md"
           mv "${tmp_file}" "${target_file}"
           echo "Downloaded changelog to ${target_file}"
 
