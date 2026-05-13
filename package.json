@@ -1,6 +1,7 @@
 {
   "name": "kj-town",
   "version": "1.0.0",
+  "packageManager": "pnpm@11.0.8",
   "description": "Auto-generates a 3D town from your system architecture and microservices. Build. Ship. Watch the town evolve 🚀✨",
   "main": "src/main.ts",
   "scripts": {
