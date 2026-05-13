@@ -1,4 +1,5 @@
 import type { TownEntity } from "../town/townData";
+import lastMigrateRaw from "../../migrations/LAST_MIGRATE.md?raw";
 
 interface HudProps {
   selectedEntity: TownEntity | null;
@@ -13,6 +14,8 @@ const tierLabels: Record<TownEntity["tier"], string> = {
   business: "Business",
   edge: "Edge",
 };
+
+const lastMigrate = lastMigrateRaw.split("\n")[0]?.trim() ?? "unknown";
 
 export function Hud({
   selectedEntity,
@@ -37,6 +40,9 @@ export function Hud({
             <a href="https://chaintng.com" target="_blank" rel="noreferrer">
               chaintng.com
             </a>
+          </span>
+          <span className="migration-stamp">
+            LAST_MIGRATE <strong>{lastMigrate}</strong>
           </span>
         </section>
 
