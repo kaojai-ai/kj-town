@@ -1,60 +1,237 @@
 import * as THREE from 'three';
-import type { MaterialPalette, CityServices } from '../../types/city';
+import type {
+    MaterialPalette,
+    CityServices
+} from '../../types/city';
 
 export function createNotificationHub(
     scene: THREE.Scene,
     materials: MaterialPalette,
     services: CityServices,
+    entityId: string,
     x: number,
     y: number,
     z: number
 ): void {
-    const group = new THREE.Group();
+    const group =
+        new THREE.Group();
 
-    const base = new THREE.Mesh(new THREE.CylinderGeometry(55, 65, 16, 32), materials.concrete);
+    group.userData = {
+        entityId,
+        isBuilding: true,
+        name: 'Notification Control Hub'
+    };
+
+    const base =
+        new THREE.Mesh(
+            new THREE.CylinderGeometry(
+                55,
+                65,
+                16,
+                32
+            ),
+            materials.concrete
+        );
+
     base.position.y = 8;
 
-    const tower = new THREE.Mesh(new THREE.CylinderGeometry(18, 26, 70, 24), materials.partnerMetal);
+    const tower =
+        new THREE.Mesh(
+            new THREE.CylinderGeometry(
+                18,
+                26,
+                70,
+                24
+            ),
+            materials.partnerMetal
+        );
+
     tower.position.y = 51;
 
-    const crown = new THREE.Mesh(new THREE.TorusGeometry(26, 3, 12, 48), materials.screenAmber);
-    crown.rotation.x = Math.PI / 2;
+    const crown =
+        new THREE.Mesh(
+            new THREE.TorusGeometry(
+                26,
+                3,
+                12,
+                48
+            ),
+            materials.screenAmber
+        );
+
+    crown.rotation.x =
+        Math.PI / 2;
+
     crown.position.y = 78;
 
-    const toggleGeo = new THREE.CylinderGeometry(3, 3, 20, 12);
-    const togglePositions = [
-        new THREE.Vector3(-25, 18, -20),
-        new THREE.Vector3(-5, 18, -20),
-        new THREE.Vector3(15, 18, -20),
-        new THREE.Vector3(-15, 18, 0),
-        new THREE.Vector3(5, 18, 0),
-        new THREE.Vector3(25, 18, 0),
-        new THREE.Vector3(-20, 18, 20),
-        new THREE.Vector3(0, 18, 20),
-        new THREE.Vector3(20, 18, 20),
-    ];
+    const toggleGeo =
+        new THREE.CylinderGeometry(
+            3,
+            3,
+            20,
+            12
+        );
 
-    togglePositions.forEach((pos) => {
-        const stem = new THREE.Mesh(toggleGeo, materials.partnerMetal);
-        stem.position.copy(pos);
-        const light = new THREE.Mesh(new THREE.SphereGeometry(4, 12, 12), materials.screenAmber);
-        light.position.set(pos.x, pos.y + 12, pos.z);
-        group.add(stem, light);
-    });
+    const togglePositions =
+        [
+            new THREE.Vector3(
+                -25,
+                18,
+                -20
+            ),
+            new THREE.Vector3(
+                -5,
+                18,
+                -20
+            ),
+            new THREE.Vector3(
+                15,
+                18,
+                -20
+            ),
+            new THREE.Vector3(
+                -15,
+                18,
+                0
+            ),
+            new THREE.Vector3(
+                5,
+                18,
+                0
+            ),
+            new THREE.Vector3(
+                25,
+                18,
+                0
+            ),
+            new THREE.Vector3(
+                -20,
+                18,
+                20
+            ),
+            new THREE.Vector3(
+                0,
+                18,
+                20
+            ),
+            new THREE.Vector3(
+                20,
+                18,
+                20
+            )
+        ];
 
-    const roleGateLeft = new THREE.Mesh(new THREE.BoxGeometry(20, 16, 6), materials.pipeBlue);
-    roleGateLeft.position.set(-32, 18, 30);
-    const roleGateMid = new THREE.Mesh(new THREE.BoxGeometry(20, 16, 6), materials.pipeYellow);
-    roleGateMid.position.set(0, 18, 30);
-    const roleGateRight = new THREE.Mesh(new THREE.BoxGeometry(20, 16, 6), materials.pipeRed);
-    roleGateRight.position.set(32, 18, 30);
+    togglePositions.forEach(
+        (pos) => {
+            const stem =
+                new THREE.Mesh(
+                    toggleGeo,
+                    materials.partnerMetal
+                );
 
-    group.add(base, tower, crown);
-    group.add(roleGateLeft, roleGateMid, roleGateRight);
-    group.position.set(x, y, z);
-    group.userData = { isBuilding: true, name: 'Notification Control Hub' };
+            stem.position.copy(
+                pos
+            );
 
-    services.addLabel(group, 'Notification Control', 120);
-    services.addLabel(roleGateMid, 'Role Access Gate', 24);
-    scene.add(group);
+            const light =
+                new THREE.Mesh(
+                    new THREE.SphereGeometry(
+                        4,
+                        12,
+                        12
+                    ),
+                    materials.screenAmber
+                );
+
+            light.position.set(
+                pos.x,
+                pos.y + 12,
+                pos.z
+            );
+
+            group.add(
+                stem,
+                light
+            );
+        }
+    );
+
+    const roleGateLeft =
+        new THREE.Mesh(
+            new THREE.BoxGeometry(
+                20,
+                16,
+                6
+            ),
+            materials.pipeBlue
+        );
+
+    roleGateLeft.position.set(
+        -32,
+        18,
+        30
+    );
+
+    const roleGateMid =
+        new THREE.Mesh(
+            new THREE.BoxGeometry(
+                20,
+                16,
+                6
+            ),
+            materials.pipeYellow
+        );
+
+    roleGateMid.position.set(
+        0,
+        18,
+        30
+    );
+
+    const roleGateRight =
+        new THREE.Mesh(
+            new THREE.BoxGeometry(
+                20,
+                16,
+                6
+            ),
+            materials.pipeRed
+        );
+
+    roleGateRight.position.set(
+        32,
+        18,
+        30
+    );
+
+    group.add(
+        base,
+        tower,
+        crown,
+        roleGateLeft,
+        roleGateMid,
+        roleGateRight
+    );
+
+    group.position.set(
+        x,
+        y,
+        z
+    );
+
+    services.addLabel(
+        group,
+        'Notification Control',
+        120
+    );
+
+    services.addLabel(
+        roleGateMid,
+        'Role Access Gate',
+        24
+    );
+
+    scene.add(
+        group
+    );
 }

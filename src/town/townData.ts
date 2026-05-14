@@ -83,7 +83,15 @@ export const townDistricts: readonly TownDistrict[] = [
         color: '#f2c56b',
         description: 'External systems, bank APIs, partners, and notification routes.',
     },
-];
+    {
+        id: 'release',
+        name: 'Release District',
+        center: [620, 0, 260],
+        radius: 200,
+        color: '#ff7b7b',
+        description: 'Commit → PR → CI → Prelive → Production',
+    },
+    ];
 
 export const townEntities: readonly TownEntity[] = [
     {

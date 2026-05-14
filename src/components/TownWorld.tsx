@@ -3,7 +3,6 @@ import { useFrame, type ThreeEvent } from '@react-three/fiber';
 import { CuboidCollider, RigidBody, type RapierRigidBody } from '@react-three/rapier';
 import { useCallback, useEffect, useMemo, useRef, useState, type RefObject } from 'react';
 import * as THREE from 'three';
-import type { OrbitControls as OrbitControlsImpl } from 'three/examples/jsm/controls/OrbitControls.js';
 import { distance2d, findNearestEntity, midpoint, resolveBlockedPosition, type InteractionState } from '../town/geometry';
 import { townDistricts, townEntities, type TownEntity, type Vec3 } from '../town/townData';
 
@@ -210,7 +209,7 @@ function SkyBackdrop() {
 }
 
 function VisualizerCameraControls({ playerCameraRef }: { playerCameraRef: PlayerCameraRef }) {
-    const controlsRef = useRef<OrbitControlsImpl>(null);
+    const controlsRef = useRef<any>(null);
     const focusPoint = useMemo(() => new THREE.Vector3(), []);
 
     useFrame(() => {
@@ -885,36 +884,89 @@ interface EntityBuildingProps {
     onTravel: (entityId: string) => void;
 }
 
-function EntityBuilding({ entity, selected, targeted, arriving, onTravel }: EntityBuildingProps) {
+function EntityBuilding({
+    entity,
+    selected,
+    targeted,
+    arriving,
+    onTravel,
+}: EntityBuildingProps) {
     const [hovered, setHovered] = useState(false);
-    const scale = selected || arriving ? 1.08 : targeted || hovered ? 1.04 : 1;
-    const labelColor = entity.tier === 'foundation' ? '#063d38' : '#1f3340';
 
-    const handleClick = (event: ThreeEvent<MouseEvent>) => {
+    const highlighted =
+        selected ||
+        targeted ||
+        arriving ||
+        hovered;
+
+    const scale =
+        selected || arriving
+            ? 1.08
+            : targeted || hovered
+              ? 1.04
+              : 1;
+
+    const labelColor =
+        entity.tier === 'foundation'
+            ? '#063d38'
+            : '#1f3340';
+
+    const handleClick = (
+        event: ThreeEvent<MouseEvent>
+    ) => {
         event.stopPropagation();
         onTravel(entity.id);
     };
 
     return (
-        <RigidBody type="fixed" colliders={false} position={[entity.position[0], entity.position[1], entity.position[2]]}>
+        <RigidBody
+            type="fixed"
+            colliders={false}
+            position={[
+                entity.position[0],
+                entity.position[1],
+                entity.position[2],
+            ]}
+        >
             <group
                 scale={scale}
                 onClick={handleClick}
                 onPointerOver={(event) => {
                     event.stopPropagation();
                     setHovered(true);
-                    document.body.style.cursor = 'pointer';
+                    document.body.style.cursor =
+                        'pointer';
                 }}
                 onPointerOut={() => {
                     setHovered(false);
-                    document.body.style.cursor = 'default';
+                    document.body.style.cursor =
+                        'default';
                 }}
             >
-                <BuildingShape entity={entity} highlighted={selected || targeted || arriving || hovered} />
-                {arriving ? <ArrivalPulse entity={entity} /> : null}
+                <BuildingShape
+                    entity={entity}
+                    highlighted={highlighted}
+                />
+
+                {highlighted ? (
+                    <SelectionAura entity={entity} />
+                ) : null}
+
+                {arriving ? (
+                    <ArrivalPulse entity={entity} />
+                ) : null}
+
                 <Text
-                    position={[0, entity.size[1] + 18, 0]}
-                    fontSize={entity.tier === 'foundation' ? 9.5 : 7}
+                    position={[
+                        0,
+                        entity.size[1] + 18,
+                        0,
+                    ]}
+                    fontSize={
+                        entity.tier === 'foundation'
+                            ? 9.5
+                            : 7
+                    }
                     color={labelColor}
                     outlineWidth={0.18}
                     outlineColor="#ffffff"
@@ -924,11 +976,146 @@ function EntityBuilding({ entity, selected, targeted, arriving, onTravel }: Enti
                     {entity.name}
                 </Text>
             </group>
-            <CuboidCollider args={[entity.size[0] * 0.33, entity.size[1] * 0.5, entity.size[2] * 0.33]} position={[0, entity.size[1] * 0.5, 0]} />
+
+            <CuboidCollider
+                args={[
+                    entity.size[0] * 0.33,
+                    entity.size[1] * 0.5,
+                    entity.size[2] * 0.33,
+                ]}
+                position={[
+                    0,
+                    entity.size[1] * 0.5,
+                    0,
+                ]}
+            />
         </RigidBody>
     );
 }
+function SelectionAura({
+    entity,
+}: {
+    entity: TownEntity;
+}) {
+    const ringRef =
+        useRef<THREE.Mesh>(null);
 
+    const beaconRef =
+        useRef<THREE.Mesh>(null);
+
+    useFrame((state) => {
+        const pulse =
+            1 +
+            Math.sin(
+                state.clock.elapsedTime * 3.2
+            ) *
+                0.08;
+
+        const glow =
+            0.42 +
+            Math.sin(
+                state.clock.elapsedTime * 3.2
+            ) *
+                0.14;
+
+        if (ringRef.current) {
+            ringRef.current.scale.setScalar(
+                pulse
+            );
+
+            const material =
+                ringRef.current.material;
+
+            if (
+                material instanceof
+                THREE.MeshStandardMaterial
+            ) {
+                material.opacity =
+                    glow;
+            }
+        }
+
+        if (beaconRef.current) {
+            beaconRef.current.position.y =
+                entity.size[1] +
+                32 +
+                Math.sin(
+                    state.clock.elapsedTime * 4
+                ) *
+                    4;
+
+            const material =
+                beaconRef.current.material;
+
+            if (
+                material instanceof
+                THREE.MeshStandardMaterial
+            ) {
+                material.emissiveIntensity =
+                    0.85 +
+                    Math.sin(
+                        state.clock.elapsedTime * 4
+                    ) *
+                        0.22;
+            }
+        }
+    });
+
+    return (
+        <group>
+            <mesh
+                ref={ringRef}
+                position={[0, 5, 0]}
+                rotation={[Math.PI / 2, 0, 0]}
+            >
+                <torusGeometry
+                    args={[
+                        Math.max(
+                            entity.size[0],
+                            entity.size[2]
+                        ) * 0.65,
+                        2.4,
+                        12,
+                        72,
+                    ]}
+                />
+
+                <meshStandardMaterial
+                    color={entity.accentColor}
+                    emissive={entity.accentColor}
+                    emissiveIntensity={0.78}
+                    transparent
+                    opacity={0.46}
+                    roughness={0.24}
+                    metalness={0.08}
+                />
+            </mesh>
+
+            <mesh
+                ref={beaconRef}
+                position={[
+                    0,
+                    entity.size[1] + 32,
+                    0,
+                ]}
+            >
+                <sphereGeometry
+                    args={[5.5, 18, 18]}
+                />
+
+                <meshStandardMaterial
+                    color="#ffffff"
+                    emissive={entity.accentColor}
+                    emissiveIntensity={1.1}
+                    transparent
+                    opacity={0.86}
+                    roughness={0.18}
+                    metalness={0.05}
+                />
+            </mesh>
+        </group>
+    );
+}
 function ArrivalPulse({ entity }: { entity: TownEntity }) {
     const ringRef = useRef<THREE.Mesh>(null);
     const beaconRef = useRef<THREE.Mesh>(null);
@@ -1296,32 +1483,87 @@ function BookingClub({ entity, emissiveIntensity }: { entity: TownEntity; emissi
     );
 }
 
-function BookingBrandStudio({ entity, emissiveIntensity }: { entity: TownEntity; emissiveIntensity: number }) {
-    const swatches = ['#13b8a8', '#ffb25e', '#8bd3ff', '#ff6fa8', '#ffd05a'];
+function BookingBrandStudio({
+    entity,
+    emissiveIntensity,
+}: {
+    entity: TownEntity;
+    emissiveIntensity: number;
+}) {
+    const swatches = [
+        '#13b8a8',
+        '#ffb25e',
+        '#8bd3ff',
+        '#ff6fa8',
+        '#ffd05a',
+    ];
 
     return (
         <group>
-            <Platform entity={entity} emissiveIntensity={emissiveIntensity} />
-            <mesh castShadow position={[0, 48, -6]}>
+            <Platform
+                entity={entity}
+                emissiveIntensity={emissiveIntensity}
+            />
+
+            <mesh
+                castShadow
+                position={[0, 48, -6]}
+            >
                 <boxGeometry args={[56, 34, 6]} />
-                <meshStandardMaterial color="#fffdf4" roughness={0.36} metalness={0.04} />
+                <meshStandardMaterial
+                    color="#fffdf4"
+                    roughness={0.36}
+                    metalness={0.04}
+                />
             </mesh>
+
             {swatches.map((color, index) => (
-                <mesh key={color} castShadow position={[-24 + index * 12, 51, -1]}>
+                <mesh
+                    key={color}
+                    castShadow
+                    position={[
+                        -24 + index * 12,
+                        51,
+                        -1,
+                    ]}
+                >
                     <boxGeometry args={[8, 20, 4]} />
-                    <meshStandardMaterial color={color} emissive={color} emissiveIntensity={0.12 + emissiveIntensity * 0.3} roughness={0.3} />
+                    <meshStandardMaterial
+                        color={color}
+                        emissive={color}
+                        emissiveIntensity={
+                            0.12 + emissiveIntensity * 0.3
+                        }
+                        roughness={0.3}
+                    />
                 </mesh>
             ))}
-            <Text position={[0, 76, -1]} fontSize={14} color="#3b3154" anchorX="center" anchorY="middle">
-                Aa
-            </Text>
-            <mesh castShadow position={[28, 29, 24]} rotation={[0, 0, -0.25]}>
+
+            <mesh
+                castShadow
+                position={[28, 29, 24]}
+                rotation={[0, 0, -0.25]}
+            >
                 <cylinderGeometry args={[3, 3, 38, 12]} />
-                <meshStandardMaterial color="#6b7280" roughness={0.36} metalness={0.22} />
+                <meshStandardMaterial
+                    color="#6b7280"
+                    roughness={0.36}
+                    metalness={0.22}
+                />
             </mesh>
-            <mesh castShadow position={[35, 50, 24]} rotation={[0, 0, -0.25]}>
+
+            <mesh
+                castShadow
+                position={[35, 50, 24]}
+                rotation={[0, 0, -0.25]}
+            >
                 <coneGeometry args={[8, 18, 18]} />
-                <meshStandardMaterial color="#fff4c7" emissive="#ffd05a" emissiveIntensity={0.2} roughness={0.28} />
+                <meshStandardMaterial
+                    color="#fff4c7"
+                    emissive="#ffd05a"
+                    emissiveIntensity={0.2}
+                    roughness={0.28}
+                />
             </mesh>
         </group>
     );

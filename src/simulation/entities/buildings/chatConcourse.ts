@@ -5,176 +5,233 @@ export function createChatConcourse(
     scene: THREE.Scene,
     materials: MaterialPalette,
     services: CityServices,
+    entityId: string,
     x: number,
     y: number,
     z: number
 ): void {
     const group = new THREE.Group();
 
-    const base = new THREE.Mesh(new THREE.BoxGeometry(150, 12, 110), materials.concrete);
+    const base = new THREE.Mesh(
+        new THREE.BoxGeometry(150, 12, 110),
+        materials.concrete
+    );
     base.position.y = 6;
     base.receiveShadow = true;
 
-    const hall = new THREE.Mesh(new THREE.BoxGeometry(90, 45, 70), materials.glass);
+    const hall = new THREE.Mesh(
+        new THREE.BoxGeometry(90, 45, 70),
+        materials.glass
+    );
     hall.position.y = 30;
     hall.castShadow = true;
 
-    const crown = new THREE.Mesh(new THREE.BoxGeometry(100, 6, 80), materials.partnerMetal);
+    const crown = new THREE.Mesh(
+        new THREE.BoxGeometry(100, 6, 80),
+        materials.partnerMetal
+    );
     crown.position.y = 55;
 
-    const disclosureTower = new THREE.Mesh(new THREE.CylinderGeometry(6, 8, 38, 16), materials.partnerMetal);
+    const disclosureTower = new THREE.Mesh(
+        new THREE.CylinderGeometry(6, 8, 38, 16),
+        materials.partnerMetal
+    );
     disclosureTower.position.set(-55, 25, 20);
     disclosureTower.castShadow = true;
 
-    const disclosureRing = new THREE.Mesh(new THREE.TorusGeometry(12, 2, 10, 36), materials.screenAmber);
+    const disclosureRing = new THREE.Mesh(
+        new THREE.TorusGeometry(12, 2, 10, 36),
+        materials.screenAmber
+    );
     disclosureRing.rotation.x = Math.PI / 2;
     disclosureRing.position.set(-55, 43, 20);
 
-    const disclosurePanel = new THREE.Mesh(new THREE.BoxGeometry(30, 16, 3), materials.screenAmber);
+    const disclosurePanel = new THREE.Mesh(
+        new THREE.BoxGeometry(30, 16, 3),
+        materials.screenAmber
+    );
     disclosurePanel.position.set(-55, 18, 48);
 
-    const messageDeck = new THREE.Mesh(new THREE.BoxGeometry(80, 6, 50), materials.partnerMetal);
+    const messageDeck = new THREE.Mesh(
+        new THREE.BoxGeometry(80, 6, 50),
+        materials.partnerMetal
+    );
     messageDeck.position.set(35, 8, 5);
 
-    const cancellationAnnex = new THREE.Mesh(new THREE.BoxGeometry(44, 16, 32), materials.glass);
+    const cancellationAnnex = new THREE.Mesh(
+        new THREE.BoxGeometry(44, 16, 32),
+        materials.glass
+    );
     cancellationAnnex.position.set(-6, 14, 42);
     cancellationAnnex.castShadow = true;
 
-    const cancellationGate = new THREE.Mesh(new THREE.TorusGeometry(12, 2, 10, 36), materials.screenAmber);
+    const cancellationGate = new THREE.Mesh(
+        new THREE.TorusGeometry(12, 2, 10, 36),
+        materials.screenAmber
+    );
     cancellationGate.rotation.x = Math.PI / 2;
     cancellationGate.position.set(20, 24, 43);
 
-    const cancellationChannel = new THREE.Mesh(new THREE.BoxGeometry(56, 2.6, 8), materials.pipeYellow);
+    const cancellationChannel = new THREE.Mesh(
+        new THREE.BoxGeometry(56, 2.6, 8),
+        materials.pipeYellow
+    );
     cancellationChannel.position.set(26, 10, 42);
 
-    const cancellationReturnLane = new THREE.Mesh(new THREE.BoxGeometry(48, 2.3, 6), materials.pipeBlue);
+    const cancellationReturnLane = new THREE.Mesh(
+        new THREE.BoxGeometry(48, 2.3, 6),
+        materials.pipeBlue
+    );
     cancellationReturnLane.position.set(22, 16, 40);
 
-    const humanTakeoverDeck = new THREE.Mesh(new THREE.BoxGeometry(30, 6, 18), materials.concrete);
+    const humanTakeoverDeck = new THREE.Mesh(
+        new THREE.BoxGeometry(30, 6, 18),
+        materials.concrete
+    );
     humanTakeoverDeck.position.set(-34, 12, -36);
-    const humanTakeoverSignal = new THREE.Mesh(new THREE.CylinderGeometry(5, 5, 24, 16), materials.pipeRed);
+
+    const humanTakeoverSignal = new THREE.Mesh(
+        new THREE.CylinderGeometry(5, 5, 24, 16),
+        materials.pipeRed
+    );
     humanTakeoverSignal.position.set(-34, 24, -36);
 
-    const handsOffArchive = new THREE.Mesh(new THREE.BoxGeometry(40, 22, 20), materials.glass);
+    const handsOffArchive = new THREE.Mesh(
+        new THREE.BoxGeometry(40, 22, 20),
+        materials.glass
+    );
     handsOffArchive.position.set(-78, 18, -6);
     handsOffArchive.castShadow = true;
-    const archiveClock = new THREE.Mesh(new THREE.TorusGeometry(9, 1.8, 10, 30), materials.screenBlue);
+
+    const archiveClock = new THREE.Mesh(
+        new THREE.TorusGeometry(9, 1.8, 10, 30),
+        materials.screenBlue
+    );
     archiveClock.rotation.x = Math.PI / 2;
     archiveClock.position.set(-78, 31, -6);
-    const archiveTimelineRail = new THREE.Mesh(new THREE.BoxGeometry(32, 2.4, 4), materials.pipeBlue);
+
+    const archiveTimelineRail = new THREE.Mesh(
+        new THREE.BoxGeometry(32, 2.4, 4),
+        materials.pipeBlue
+    );
     archiveTimelineRail.position.set(-78, 13, 7);
 
-    const handoffTimeline = new THREE.Mesh(new THREE.BoxGeometry(62, 4, 10), materials.partnerMetal);
+    const handoffTimeline = new THREE.Mesh(
+        new THREE.BoxGeometry(62, 4, 10),
+        materials.partnerMetal
+    );
     handoffTimeline.position.set(-6, 10, -48);
+
     const markerPostGeo = new THREE.CylinderGeometry(2.2, 2.2, 12, 10);
     const markerLightGeo = new THREE.SphereGeometry(3.5, 10, 10);
     const markerXs = [-22, -6, 10];
+
     markerXs.forEach((markerX, index) => {
-        const markerPost = new THREE.Mesh(markerPostGeo, materials.partnerMetal);
+        const markerPost = new THREE.Mesh(
+            markerPostGeo,
+            materials.partnerMetal
+        );
+
         markerPost.position.set(markerX, 17, -48);
-        const markerLight = new THREE.Mesh(markerLightGeo, index === 1 ? materials.pipeRed : materials.screenAmber);
+
+        const markerLight = new THREE.Mesh(
+            markerLightGeo,
+            index === 1
+                ? materials.pipeRed
+                : materials.screenAmber
+        );
+
         markerLight.position.set(markerX, 24, -48);
+
         group.add(markerPost, markerLight);
     });
 
-    const railLeft = new THREE.Mesh(new THREE.TorusGeometry(32, 2, 10, 48, Math.PI), materials.pipeBlue);
-    railLeft.rotation.set(Math.PI / 2, 0, Math.PI / 2);
+    const railLeft = new THREE.Mesh(
+        new THREE.TorusGeometry(32, 2, 10, 48, Math.PI),
+        materials.pipeBlue
+    );
+
+    railLeft.rotation.set(
+        Math.PI / 2,
+        0,
+        Math.PI / 2
+    );
+
     railLeft.position.set(35, 22, -18);
 
-    const railRight = new THREE.Mesh(new THREE.TorusGeometry(32, 2, 10, 48, Math.PI), materials.pipeYellow);
-    railRight.rotation.set(Math.PI / 2, 0, -Math.PI / 2);
+    const railRight = new THREE.Mesh(
+        new THREE.TorusGeometry(32, 2, 10, 48, Math.PI),
+        materials.pipeYellow
+    );
+
+    railRight.rotation.set(
+        Math.PI / 2,
+        0,
+        -Math.PI / 2
+    );
+
     railRight.position.set(35, 22, 28);
 
-    const stabilizerHub = new THREE.Mesh(new THREE.CylinderGeometry(7, 9, 24, 18), materials.screenBlue);
+    const stabilizerHub = new THREE.Mesh(
+        new THREE.CylinderGeometry(7, 9, 24, 18),
+        materials.screenBlue
+    );
+
     stabilizerHub.position.set(58, 20, 5);
     stabilizerHub.castShadow = true;
 
-    const stabilizerRing = new THREE.Mesh(new THREE.TorusGeometry(13, 1.7, 12, 36), materials.screenBlue);
+    const stabilizerRing = new THREE.Mesh(
+        new THREE.TorusGeometry(13, 1.7, 12, 36),
+        materials.screenBlue
+    );
+
     stabilizerRing.rotation.x = Math.PI / 2;
     stabilizerRing.position.set(58, 34, 5);
 
-    const stabilizerStrutA = new THREE.Mesh(new THREE.BoxGeometry(3, 16, 3), materials.partnerMetal);
-    stabilizerStrutA.position.set(47, 16, -4);
-    const stabilizerStrutB = new THREE.Mesh(new THREE.BoxGeometry(3, 16, 3), materials.partnerMetal);
-    stabilizerStrutB.position.set(47, 16, 14);
-    const stabilizerStrutC = new THREE.Mesh(new THREE.BoxGeometry(3, 16, 3), materials.partnerMetal);
-    stabilizerStrutC.position.set(69, 16, -4);
-    const stabilizerStrutD = new THREE.Mesh(new THREE.BoxGeometry(3, 16, 3), materials.partnerMetal);
-    stabilizerStrutD.position.set(69, 16, 14);
+    const originalAppGate = new THREE.Mesh(
+        new THREE.TorusGeometry(10, 1.6, 10, 32),
+        materials.pipeBlue
+    );
 
-    const originalAppGate = new THREE.Mesh(new THREE.TorusGeometry(10, 1.6, 10, 32), materials.pipeBlue);
     originalAppGate.rotation.x = Math.PI / 2;
     originalAppGate.position.set(64, 18, -30);
-    const originalAppRail = new THREE.Mesh(new THREE.BoxGeometry(36, 2.2, 6), materials.pipeBlue);
+
+    const originalAppRail = new THREE.Mesh(
+        new THREE.BoxGeometry(36, 2.2, 6),
+        materials.pipeBlue
+    );
+
     originalAppRail.position.set(76, 12, -30);
 
-    const listTurboLane = new THREE.Mesh(new THREE.BoxGeometry(90, 2.2, 7), materials.pipeYellow);
-    listTurboLane.position.set(34, 12, -2);
-    const listTurboEcho = new THREE.Mesh(new THREE.BoxGeometry(86, 2, 5), materials.pipeBlue);
-    listTurboEcho.position.set(35, 15, -2);
+    const insightTower = new THREE.Mesh(
+        new THREE.CylinderGeometry(7, 8, 42, 16),
+        materials.partnerMetal
+    );
 
-    const insightTower = new THREE.Mesh(new THREE.CylinderGeometry(7, 8, 42, 16), materials.partnerMetal);
     insightTower.position.set(-64, 27, -28);
-    const sentimentRing = new THREE.Mesh(new THREE.TorusGeometry(11, 1.7, 10, 32), materials.pipeYellow);
+
+    const sentimentRing = new THREE.Mesh(
+        new THREE.TorusGeometry(11, 1.7, 10, 32),
+        materials.pipeYellow
+    );
+
     sentimentRing.rotation.x = Math.PI / 2;
     sentimentRing.position.set(-64, 46, -28);
-    const momentArchive = new THREE.Mesh(new THREE.BoxGeometry(24, 18, 4), materials.screenBlue);
-    momentArchive.position.set(-64, 20, -48);
 
-    const feedbackPad = new THREE.Mesh(new THREE.BoxGeometry(34, 6, 26), materials.concrete);
+    const feedbackPad = new THREE.Mesh(
+        new THREE.BoxGeometry(34, 6, 26),
+        materials.concrete
+    );
+
     feedbackPad.position.set(68, 8, 36);
-    const feedbackLoop = new THREE.Mesh(new THREE.TorusGeometry(10, 1.8, 10, 32), materials.pipeRed);
+
+    const feedbackLoop = new THREE.Mesh(
+        new THREE.TorusGeometry(10, 1.8, 10, 32),
+        materials.pipeRed
+    );
+
     feedbackLoop.rotation.x = Math.PI / 2;
     feedbackLoop.position.set(68, 19, 36);
-    const feedbackTerminal = new THREE.Mesh(new THREE.BoxGeometry(18, 14, 5), materials.screenAmber);
-    feedbackTerminal.position.set(68, 18, 48);
-
-    const sidePanelWing = new THREE.Mesh(new THREE.BoxGeometry(34, 28, 26), materials.glass);
-    sidePanelWing.position.set(64, 20, -38);
-    const sidePanelRailA = new THREE.Mesh(new THREE.BoxGeometry(26, 2.4, 4), materials.pipeBlue);
-    sidePanelRailA.position.set(64, 24, -24);
-    const sidePanelRailB = new THREE.Mesh(new THREE.BoxGeometry(26, 2.4, 4), materials.pipeYellow);
-    sidePanelRailB.position.set(64, 18, -24);
-    const sidePanelRailC = new THREE.Mesh(new THREE.BoxGeometry(26, 2.4, 4), materials.pipeRed);
-    sidePanelRailC.position.set(64, 12, -24);
-
-    const adReferralDeck = new THREE.Mesh(new THREE.BoxGeometry(42, 16, 24), materials.glass);
-    adReferralDeck.position.set(-22, 16, 50);
-    adReferralDeck.castShadow = true;
-    const referralLens = new THREE.Mesh(new THREE.CylinderGeometry(6, 6, 16, 16), materials.screenAmber);
-    referralLens.position.set(-38, 12, 50);
-    const referralSignalRing = new THREE.Mesh(new THREE.TorusGeometry(10, 1.8, 10, 30), materials.pipeYellow);
-    referralSignalRing.rotation.x = Math.PI / 2;
-    referralSignalRing.position.set(-38, 24, 50);
-    const referralTimelineLane = new THREE.Mesh(new THREE.BoxGeometry(58, 2.2, 6), materials.pipeBlue);
-    referralTimelineLane.position.set(-14, 12, 50);
-    const sourceBeaconGeo = new THREE.SphereGeometry(3.2, 10, 10);
-    const sourceBeaconXs = [-32, -22, -12, -2];
-    sourceBeaconXs.forEach((sourceX, index) => {
-        const sourceBeacon = new THREE.Mesh(
-            sourceBeaconGeo,
-            index % 2 === 0 ? materials.screenAmber : materials.screenBlue
-        );
-        sourceBeacon.position.set(sourceX, 20, 50);
-        group.add(sourceBeacon);
-    });
-
-    const podGeo = new THREE.SphereGeometry(4, 12, 12);
-    const podPositions = [
-        new THREE.Vector3(10, 22, -18),
-        new THREE.Vector3(30, 28, -18),
-        new THREE.Vector3(50, 22, -18),
-        new THREE.Vector3(10, 22, 28),
-        new THREE.Vector3(30, 28, 28),
-        new THREE.Vector3(50, 22, 28),
-    ];
-
-    podPositions.forEach((pos) => {
-        const pod = new THREE.Mesh(podGeo, materials.screenBlue);
-        pod.position.copy(pos);
-        pod.castShadow = true;
-        group.add(pod);
-    });
 
     group.add(
         base,
@@ -198,44 +255,31 @@ export function createChatConcourse(
         railRight,
         stabilizerHub,
         stabilizerRing,
-        stabilizerStrutA,
-        stabilizerStrutB,
-        stabilizerStrutC,
-        stabilizerStrutD,
         originalAppGate,
         originalAppRail,
-        listTurboLane,
-        listTurboEcho,
         insightTower,
         sentimentRing,
-        momentArchive,
         feedbackPad,
-        feedbackLoop,
-        feedbackTerminal,
-        sidePanelWing,
-        sidePanelRailA,
-        sidePanelRailB,
-        sidePanelRailC,
-        adReferralDeck,
-        referralLens,
-        referralSignalRing,
-        referralTimelineLane
+        feedbackLoop
     );
 
     group.position.set(x, y, z);
-    group.userData = { isBuilding: true, name: 'Chat Concourse' };
+
+    // สำคัญ: userData ต้อง set ครั้งเดียว
+    group.userData = {
+        entityId,
+        isBuilding: true,
+        name: 'Chat Concourse'
+    };
 
     services.addLabel(group, 'Chat Module', 110);
     services.addLabel(disclosureTower, 'AI Disclosure', 60);
-    services.addLabel(cancellationAnnex, 'Cancel Clarity Annex', 36);
-    services.addLabel(stabilizerHub, 'Message Stabilizer', 34);
+    services.addLabel(cancellationAnnex, 'Cancel Clarity', 36);
     services.addLabel(humanTakeoverSignal, 'Human Handoff', 30);
-    services.addLabel(handsOffArchive, 'Hands-off History', 28);
-    services.addLabel(handoffTimeline, 'Handoff Timeline', 20);
-    services.addLabel(originalAppGate, 'Original App Jump', 24);
-    services.addLabel(insightTower, 'Sentiment & Notes', 34);
-    services.addLabel(feedbackLoop, 'AI Feedback Loop', 24);
-    services.addLabel(sidePanelWing, 'AI Side Panel', 30);
-    services.addLabel(adReferralDeck, 'Ad Referral Context', 24);
+    services.addLabel(stabilizerHub, 'Message Stabilizer', 34);
+    services.addLabel(originalAppGate, 'Original App', 24);
+    services.addLabel(insightTower, 'Sentiment', 34);
+    services.addLabel(feedbackLoop, 'Feedback Loop', 24);
+
     scene.add(group);
 }

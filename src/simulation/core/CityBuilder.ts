@@ -1,7 +1,9 @@
 import * as THREE from 'three';
+
 import { createGround } from '../entities/land/ground';
 import { createPaths } from '../entities/land/paths';
 import { createEnvironment } from '../entities/environment/environment';
+
 import { createKaojaiCore } from '../entities/buildings/kaojaiCore';
 import { createDatabaseCluster } from '../entities/buildings/databaseCluster';
 import { createAILab } from '../entities/buildings/aiLab';
@@ -11,11 +13,24 @@ import { createPartnerExchange } from '../entities/buildings/partnerExchange';
 import { createNotificationHub } from '../entities/buildings/notificationHub';
 import { createChatConcourse } from '../entities/buildings/chatConcourse';
 import { createBroadcastCampaignHub } from '../entities/buildings/broadcastCampaignHub';
+
 import { createEventBus } from '../entities/microservices/eventBus';
-import { createFlowParticles as createFlowParticlesEntity, createMessageStream } from '../entities/microservices/flowParticles';
+
+import {
+    createFlowParticles as createFlowParticlesEntity,
+    createMessageStream,
+} from '../entities/microservices/flowParticles';
+
 import { createMaterialPalette } from '../providers/materialProvider';
 import { addLabel } from '../providers/labelProvider';
-import type { CityServices, MaterialPalette } from '../types/city';
+
+import type {
+    CityServices,
+    MaterialPalette,
+} from '../types/city';
+
+import { townEntities } from '../../town/townData';
+import { TownInteraction } from '../../town/interaction';
 
 export class CityBuilder {
     private scene: THREE.Scene;
@@ -25,248 +40,277 @@ export class CityBuilder {
     private clock: THREE.Clock;
     private materials: MaterialPalette;
     private services: CityServices;
+    private interaction: TownInteraction;
 
-    constructor(scene: THREE.Scene) {
+    constructor(
+        scene: THREE.Scene,
+        camera: THREE.Camera
+    ) {
         this.scene = scene;
+
         this.particles = [];
         this.mixers = [];
         this.animatedObjects = [];
+
         this.clock = new THREE.Clock();
+
         this.materials = createMaterialPalette();
+
+        this.interaction = new TownInteraction(
+            scene,
+            camera
+        );
+
         this.services = {
             addLabel,
-            registerAnimatedObject: (object: THREE.Object3D) => {
+
+            registerAnimatedObject: (
+                object: THREE.Object3D
+            ) => {
                 this.animatedObjects.push(object);
             },
         };
     }
 
-    build(): void {
-        createGround(this.scene, this.materials);
-        createEnvironment(this.scene);
+    private getEntityPosition(
+        id: string
+    ): [number, number, number] {
+        const entity = townEntities.find(
+            (e) => e.id === id
+        );
 
-        createKaojaiCore(this.scene, this.materials, this.services, 0, 0, 0);
-        createDatabaseCluster(this.scene, this.materials, this.services, -300, 0, -200);
-        createAILab(this.scene, this.materials, this.services, 300, 0, -100);
-        createSocialChannels(this.scene, this.materials, this.services, -300, 0, 200);
-        createChatConcourse(this.scene, this.materials, this.services, 120, 0, 140);
-        createBroadcastCampaignHub(this.scene, this.materials, this.services, -80, 0, 350);
-        createShops(this.scene, this.materials, this.services, 0, 0, 250);
-        createPartnerExchange(this.scene, this.materials, this.services, 220, 0, 260);
-        createNotificationHub(this.scene, this.materials, this.services, -180, 0, 120);
+        if (!entity) {
+            return [0, 0, 0];
+        }
 
-        createEventBus(this.scene, this.materials, this.services);
-        createPaths(this.scene, this.materials);
+        // fix readonly tuple issue
+        return [
+            entity.position[0],
+            entity.position[1],
+            entity.position[2],
+        ];
+    }
 
-        this.createFlowParticles(-40, 0, 250, 280);
-        this.createMessageStream(120, 0, 140, 200);
-        this.createMessageStream(88, 0, 168, 130, {
-            color: 0xffd27a,
-            count: 10,
-            radius: 2.2,
-            yOffset: 38,
-            velocityBase: 0.95,
-            velocityStep: 0.03,
-            waveAmplitude: 0.25,
-            waveSpeed: 1.2,
-            laneSpread: 0.55,
-        });
-        this.createMessageStream(-300, 0, 200, 180, {
-            color: 0x7ad7ff,
-            count: 12,
-            radius: 2.4,
-            yOffset: 42,
-            zOffset: 28,
-            velocityBase: 1.35,
-            velocityStep: 0.04,
-            waveAmplitude: 0.45,
-            waveSpeed: 2.1,
-            laneSpread: 0.7,
-        });
-        this.createMessageStream(10, 0, 250, 240, {
-            color: 0xffe08a,
-            count: 16,
-            radius: 2.1,
-            yOffset: 47,
-            zOffset: -20,
-            velocityBase: 1.5,
-            velocityStep: 0.07,
-            waveAmplitude: 0.35,
-            waveSpeed: 2.2,
-            laneSpread: 0.5,
-        });
-        this.createMessageStream(220, 0, 260, 120, {
-            color: 0xffc45a,
-            count: 9,
-            radius: 2.2,
-            yOffset: 39,
-            zOffset: -30,
-            velocityBase: 1.1,
-            velocityStep: 0.04,
-            waveAmplitude: 0.3,
-            waveSpeed: 1.6,
-            laneSpread: 0.45,
-        });
-        this.createMessageStream(255, 0, -72, 170, {
-            color: 0xffde74,
-            count: 12,
-            radius: 2.1,
-            yOffset: 46,
-            zOffset: 0,
-            velocityBase: 1.35,
-            velocityStep: 0.05,
-            waveAmplitude: 0.33,
-            waveSpeed: 1.9,
-            laneSpread: 0.55,
-        });
-        this.createMessageStream(210, 0, 162, 160, {
-            color: 0x8ad4ff,
-            count: 11,
-            radius: 2.1,
-            yOffset: 40,
-            zOffset: -6,
-            velocityBase: 1.15,
-            velocityStep: 0.04,
-            waveAmplitude: 0.28,
-            waveSpeed: 1.5,
-            laneSpread: 0.5,
-        });
-        this.createMessageStream(120, 0, 106, 110, {
-            color: 0xff8b8b,
-            count: 8,
-            radius: 2.0,
-            yOffset: 35,
-            zOffset: -18,
-            velocityBase: 0.95,
-            velocityStep: 0.03,
-            waveAmplitude: 0.2,
-            waveSpeed: 1.3,
-            laneSpread: 0.4,
-        });
-        this.createMessageStream(120, 0, 140, 90, {
-            color: 0xff9f9f,
-            count: 8,
-            radius: 2.3,
-            yOffset: 34,
-            zOffset: 32,
-            velocityBase: 0.9,
-            velocityStep: 0.03,
-            waveAmplitude: 0.22,
-            waveSpeed: 1.4,
-            laneSpread: 0.5,
-        });
-        this.createMessageStream(74, 0, 190, 120, {
-            color: 0xffd98c,
-            count: 8,
-            radius: 2.0,
-            yOffset: 33,
-            zOffset: 2,
-            velocityBase: 0.85,
-            velocityStep: 0.03,
-            waveAmplitude: 0.21,
-            waveSpeed: 1.5,
-            laneSpread: 0.4,
-        });
-        this.createMessageStream(258, 0, 230, 78, {
-            color: 0xffe070,
-            count: 7,
-            radius: 2.0,
-            yOffset: 30,
-            zOffset: -12,
-            velocityBase: 0.82,
-            velocityStep: 0.03,
-            waveAmplitude: 0.2,
-            waveSpeed: 1.35,
-            laneSpread: 0.35,
-        });
-        this.createMessageStream(-344, 0, 198, 94, {
-            color: 0x8dd6ff,
-            count: 6,
-            radius: 1.9,
-            yOffset: 31,
-            zOffset: 0,
-            velocityBase: 0.8,
-            velocityStep: 0.03,
-            waveAmplitude: 0.18,
-            waveSpeed: 1.25,
-            laneSpread: 0.35,
-        });
-        this.createMessageStream(-80, 0, 322, 112, {
-            color: 0xffcc44,
-            count: 12,
-            radius: 2.0,
-            yOffset: 43,
-            zOffset: -24,
-            velocityBase: 0.92,
-            velocityStep: 0.03,
-            waveAmplitude: 0.24,
-            waveSpeed: 1.45,
-            laneSpread: 0.5,
-        });
-        this.createMessageStream(-18, 0, 350, 172, {
-            color: 0x9fdcff,
-            count: 18,
-            radius: 2.1,
-            yOffset: 50,
-            zOffset: 4,
-            velocityBase: 1.4,
-            velocityStep: 0.04,
-            waveAmplitude: 0.28,
-            waveSpeed: 1.8,
-            laneSpread: 0.58,
-        });
-        this.createMessageStream(-150, 0, 350, 138, {
-            color: 0xff8f8f,
-            count: 10,
-            radius: 1.9,
-            yOffset: 40,
-            zOffset: 36,
-            velocityBase: 1.05,
-            velocityStep: 0.04,
-            waveAmplitude: 0.22,
-            waveSpeed: 1.55,
-            laneSpread: 0.42,
-        });
-        this.createMessageStream(-80, 0, 405, 210, {
-            color: 0xfff0a8,
-            count: 24,
-            radius: 1.75,
-            yOffset: 54,
-            zOffset: 0,
-            velocityBase: 0.72,
-            velocityStep: 0.025,
-            waveAmplitude: 0.16,
-            waveSpeed: 1.05,
-            laneSpread: 0.7,
-        });
-        this.createMessageStream(-132, 0, 386, 96, {
-            color: 0x82c7ff,
-            count: 9,
-            radius: 1.65,
-            yOffset: 44,
-            zOffset: 0,
-            velocityBase: 0.68,
-            velocityStep: 0.02,
-            waveAmplitude: 0.18,
-            waveSpeed: 1.1,
-            laneSpread: 0.36,
-        });
-        this.createMessageStream(32, 0, 388, 126, {
-            color: 0xffa0a0,
-            count: 10,
-            radius: 1.7,
-            yOffset: 46,
-            zOffset: 8,
-            velocityBase: 0.78,
-            velocityStep: 0.025,
-            waveAmplitude: 0.2,
-            waveSpeed: 1.2,
-            laneSpread: 0.4,
+    private createBuildings(): void {
+        townEntities.forEach((entity) => {
+            const [x, y, z] = entity.position;
+
+            const id = entity.id;
+
+            switch (id) {
+                case 'kaojai-core':
+                    createKaojaiCore(
+                        this.scene,
+                        this.materials,
+                        this.services,
+                        id,
+                        x,
+                        y,
+                        z
+                    );
+                    break;
+
+                case 'database-cluster':
+                    createDatabaseCluster(
+                        this.scene,
+                        this.materials,
+                        this.services,
+                        id,
+                        x,
+                        y,
+                        z
+                    );
+                    break;
+
+                case 'ai-engine':
+                    createAILab(
+                        this.scene,
+                        this.materials,
+                        this.services,
+                        id,
+                        x,
+                        y,
+                        z
+                    );
+                    break;
+
+                case 'unified-inbox':
+                    createSocialChannels(
+                        this.scene,
+                        this.materials,
+                        this.services,
+                        id,
+                        x,
+                        y,
+                        z
+                    );
+                    break;
+
+                case 'chatbot-orchestration':
+                    createChatConcourse(
+                        this.scene,
+                        this.materials,
+                        this.services,
+                        id,
+                        x,
+                        y,
+                        z
+                    );
+                    break;
+
+                case 'broadcast-campaigns':
+                    createBroadcastCampaignHub(
+                        this.scene,
+                        this.materials,
+                        this.services,
+                        id,
+                        x,
+                        y,
+                        z
+                    );
+                    break;
+
+                case 'booking-management':
+                    createShops(
+                        this.scene,
+                        this.materials,
+                        this.services,
+                        id,
+                        x,
+                        y,
+                        z
+                    );
+                    break;
+
+                case 'partner-exchange':
+                    createPartnerExchange(
+                        this.scene,
+                        this.materials,
+                        this.services,
+                        id,
+                        x,
+                        y,
+                        z
+                    );
+                    break;
+
+                case 'notification-hub':
+                    createNotificationHub(
+                        this.scene,
+                        this.materials,
+                        this.services,
+                        id,
+                        x,
+                        y,
+                        z
+                    );
+                    break;
+            }
         });
     }
 
-    createFlowParticles(x: number, y: number, z: number, length: number): void {
-        createFlowParticlesEntity(this.scene, this.particles, x, y, z, length);
+    private createTraffic(): void {
+        const chatPos =
+            this.getEntityPosition(
+                'chatbot-orchestration'
+            );
+
+        const socialPos =
+            this.getEntityPosition(
+                'unified-inbox'
+            );
+
+        const shopPos =
+            this.getEntityPosition(
+                'booking-management'
+            );
+
+        const partnerPos =
+            this.getEntityPosition(
+                'partner-exchange'
+            );
+
+        const campaignPos =
+            this.getEntityPosition(
+                'broadcast-campaigns'
+            );
+
+        this.createFlowParticles(
+            shopPos[0] - 40,
+            0,
+            shopPos[2],
+            280
+        );
+
+        this.createMessageStream(
+            chatPos[0],
+            0,
+            chatPos[2],
+            200
+        );
+
+        this.createMessageStream(
+            socialPos[0],
+            0,
+            socialPos[2],
+            180
+        );
+
+        this.createMessageStream(
+            partnerPos[0],
+            0,
+            partnerPos[2],
+            140
+        );
+
+        this.createMessageStream(
+            campaignPos[0],
+            0,
+            campaignPos[2],
+            170
+        );
+    }
+
+    build(): void {
+        createGround(
+            this.scene,
+            this.materials
+        );
+
+        createEnvironment(
+            this.scene
+        );
+
+        this.createBuildings();
+
+        createEventBus(
+            this.scene,
+            this.materials,
+            this.services
+        );
+
+        createPaths(
+            this.scene,
+            this.materials
+        );
+
+        this.createTraffic();
+    }
+
+    createFlowParticles(
+        x: number,
+        y: number,
+        z: number,
+        length: number
+    ): void {
+        createFlowParticlesEntity(
+            this.scene,
+            this.particles,
+            x,
+            y,
+            z,
+            length
+        );
     }
 
     createMessageStream(
@@ -274,63 +318,74 @@ export class CityBuilder {
         y: number,
         z: number,
         length: number,
-        options?: {
-            color?: number;
-            count?: number;
-            radius?: number;
-            yOffset?: number;
-            zOffset?: number;
-            velocityBase?: number;
-            velocityStep?: number;
-            waveAmplitude?: number;
-            waveSpeed?: number;
-            laneSpread?: number;
-        }
+        options?: Record<string, unknown>
     ): void {
-        createMessageStream(this.scene, this.particles, x, y, z, length, options);
+        createMessageStream(
+            this.scene,
+            this.particles,
+            x,
+            y,
+            z,
+            length,
+            options
+        );
     }
 
     update(): void {
-        const delta = this.clock.getDelta();
-        const elapsed = this.clock.elapsedTime;
+        const delta =
+            this.clock.getDelta();
 
-        this.mixers.forEach((mixer) => mixer.update(delta));
+        const elapsed =
+            this.clock.elapsedTime;
 
-        this.particles.forEach((particle) => {
-            particle.position.x += particle.userData.velocity;
-            if (particle.position.x > particle.userData.endX) {
-                particle.position.x = particle.userData.startX;
+        this.mixers.forEach(
+            (mixer) => {
+                mixer.update(delta);
             }
+        );
 
-            if (typeof particle.userData.baseY === 'number') {
-                const phase = particle.userData.phase ?? 0;
-                const waveSpeed = particle.userData.waveSpeed ?? 1;
-                const waveAmplitude = particle.userData.waveAmplitude ?? 0;
-                particle.position.y = particle.userData.baseY + Math.sin(elapsed * waveSpeed + phase) * waveAmplitude;
+        this.particles.forEach(
+            (particle) => {
+                particle.position.x +=
+                    particle.userData.velocity;
+
+                if (
+                    particle.position.x >
+                    particle.userData.endX
+                ) {
+                    particle.position.x =
+                        particle.userData.startX;
+                }
+
+                if (
+                    typeof particle.userData.baseY ===
+                    'number'
+                ) {
+                    particle.position.y =
+                        particle.userData.baseY +
+                        Math.sin(elapsed) *
+                            (
+                                particle.userData.waveAmplitude ??
+                                0
+                            );
+                }
             }
+        );
 
-            if (typeof particle.userData.baseZ === 'number') {
-                const phase = particle.userData.phase ?? 0;
-                const waveSpeed = particle.userData.waveSpeed ?? 1;
-                const waveAmplitude = particle.userData.waveAmplitude ?? 0;
-                particle.position.z = particle.userData.baseZ + Math.cos(elapsed * waveSpeed + phase) * waveAmplitude * 0.25;
+        this.animatedObjects.forEach(
+            (object) => {
+                const speed =
+                    object.userData.spinSpeed ?? 0;
+
+                if (speed !== 0) {
+                    object.rotation.y +=
+                        speed * delta;
+                }
             }
-        });
+        );
+    }
 
-        this.animatedObjects.forEach((object) => {
-            const spinSpeed = object.userData.spinSpeed ?? 0;
-            const bobAmplitude = object.userData.bobAmplitude ?? 0;
-            const bobSpeed = object.userData.bobSpeed ?? 1;
-            const bobBaseY = object.userData.bobBaseY ?? object.position.y;
-
-            if (spinSpeed !== 0) {
-                const axis = object.userData.spinAxis ?? 'y';
-                object.rotation[axis as 'x' | 'y' | 'z'] += spinSpeed * delta;
-            }
-
-            if (bobAmplitude !== 0) {
-                object.position.y = bobBaseY + Math.sin(elapsed * bobSpeed + (object.userData.phase ?? 0)) * bobAmplitude;
-            }
-        });
+    destroy(): void {
+        this.interaction.destroy();
     }
 }
