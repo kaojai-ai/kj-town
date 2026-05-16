@@ -1,4 +1,4 @@
-name: Deploy static site to S3 + Invalidate CF
+name: Deploy Production
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.workflow_run.head_branch || github.ref }}
