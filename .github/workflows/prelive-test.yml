@@ -63,8 +63,3 @@ jobs:
 
       - name: Test
         run: pnpm test
-
-      - name: 'notify vercel'
-        uses: 'vercel/repository-dispatch/actions/status@v1'
-        with:
-          name: 'Vercel - kj-town: test'
