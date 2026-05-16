@@ -87,7 +87,7 @@ export function Hud({
           <strong>🛡️ Resilient</strong>
         </div>
         <div>
-          <strong>💪 Built to last</strong>
+          <strong>🏋️ Built to last</strong>
         </div>
       </section>
 
