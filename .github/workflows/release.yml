@@ -5,8 +5,8 @@ concurrency:
   cancel-in-progress: true
 
 on:
-  # push: # IN PROGRESS
-  #   branches: [main]
+  push:
+    branches: [main]
   workflow_dispatch:
 
 permissions:
