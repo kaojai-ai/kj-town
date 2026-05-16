@@ -84,7 +84,7 @@ export function Hud({
           <strong>🚀 Affordable</strong>
         </div>
         <div>
-          <strong>🛡️ Resilient</strong>
+          <strong>🧘 Resilient</strong>
         </div>
         <div>
           <strong>🏋️ Built to last</strong>
