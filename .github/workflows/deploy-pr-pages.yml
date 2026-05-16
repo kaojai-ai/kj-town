@@ -90,6 +90,7 @@ jobs:
         run: pnpm run build
 
       - name: Deploy PR preview
+        if: github.event.pull_request.head.repo.full_name == github.repository
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -99,6 +100,7 @@ jobs:
           keep_files: true
 
       - name: Comment preview URL
+        if: github.event.pull_request.head.repo.full_name == github.repository
         uses: actions/github-script@v8
         with:
           script: |
