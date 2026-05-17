@@ -1,7 +1,7 @@
-import { OrbitControls, Text, useKeyboardControls } from '@react-three/drei';
+import { OrbitControls, Text as DreiText, useKeyboardControls } from '@react-three/drei';
 import { useFrame, type ThreeEvent } from '@react-three/fiber';
 import { CuboidCollider, RigidBody, type RapierRigidBody } from '@react-three/rapier';
-import { useCallback, useEffect, useMemo, useRef, useState, type RefObject } from 'react';
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState, type ComponentProps, type RefObject } from 'react';
 import * as THREE from 'three';
 import { distance2d, findNearestEntity, midpoint, resolveBlockedPosition, type InteractionState } from '../town/geometry';
 import { townDistricts, townEntities, type TownEntity, type Vec3 } from '../town/townData';
@@ -15,6 +15,14 @@ interface TownWorldProps {
 }
 
 type ControlName = 'forward' | 'back' | 'left' | 'right' | 'interact' | 'close';
+
+function Text(props: ComponentProps<typeof DreiText>) {
+    return (
+        <Suspense fallback={null}>
+            <DreiText {...props} />
+        </Suspense>
+    );
+}
 
 interface PlayerCameraState {
     position: THREE.Vector3;

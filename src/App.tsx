@@ -149,98 +149,104 @@ export function App() {
                         : 'app-shell'
                 }
             >
-                <Canvas
-                    camera={{
-                        position: [
-                            0,
-                            250,
-                            520,
-                        ],
-                        fov: 52,
-                        near: 1,
-                        far: 2400,
-                    }}
-                    dpr={[1, 2]}
-                    gl={{
-                        antialias: true,
-                        alpha: false,
-                    }}
-                    shadows
-                    fallback={
-                        <div className="webgl-fallback">
-                            WebGL is not
-                            available.
-                        </div>
-                    }
-                >
-                    <color
-                        attach="background"
-                        args={['#78bff2']}
-                    />
-
-                    <fog
-                        attach="fog"
-                        args={[
-                            '#a8d8f6',
-                            920,
-                            2050,
-                        ]}
-                    />
-
-                    <Suspense
-                        fallback={null}
+                <div className="canvas-stage">
+                    <Canvas
+                        camera={{
+                            position: [
+                                0,
+                                250,
+                                520,
+                            ],
+                            fov: 52,
+                            near: 1,
+                            far: 2400,
+                        }}
+                        dpr={[1, 2]}
+                        gl={{
+                            antialias: true,
+                            alpha: false,
+                        }}
+                        shadows
+                        fallback={
+                            <div className="webgl-fallback">
+                                WebGL is not
+                                available.
+                            </div>
+                        }
                     >
-                        <Physics
-                            colliders={false}
-                            gravity={[
-                                0,
-                                -9.81,
-                                0,
+                        <color
+                            attach="background"
+                            args={['#78bff2']}
+                        />
+
+                        <fog
+                            attach="fog"
+                            args={[
+                                '#a8d8f6',
+                                920,
+                                2050,
                             ]}
-                        >
-                            <TownWorld
-                                selectedEntityId={
-                                    selectedEntityId
-                                }
-                                setSelectedEntityId={
-                                    setSelectedEntityId
-                                }
-                                setInteraction={
-                                    setInteraction
-                                }
-                                travelTargetEntityId={
-                                    travelTargetEntityId
-                                }
-                                setTravelTargetEntityId={
-                                    handleTravelTarget
-                                }
-                            />
-                        </Physics>
+                        />
 
-                        <EffectComposer
-                            multisampling={0}
+                        <Suspense
+                            fallback={null}
                         >
-                            <Bloom
-                                luminanceThreshold={
-                                    0.78
-                                }
-                                intensity={
-                                    0.42
-                                }
-                                mipmapBlur
-                            />
+                            <Physics
+                                colliders={false}
+                                gravity={[
+                                    0,
+                                    -9.81,
+                                    0,
+                                ]}
+                            >
+                                <TownWorld
+                                    selectedEntityId={
+                                        selectedEntityId
+                                    }
+                                    setSelectedEntityId={
+                                        setSelectedEntityId
+                                    }
+                                    setInteraction={
+                                        setInteraction
+                                    }
+                                    travelTargetEntityId={
+                                        travelTargetEntityId
+                                    }
+                                    setTravelTargetEntityId={
+                                        handleTravelTarget
+                                    }
+                                />
+                            </Physics>
+                        </Suspense>
 
-                            <Vignette
-                                darkness={
-                                    0.18
-                                }
-                                offset={
-                                    0.24
-                                }
-                            />
-                        </EffectComposer>
-                    </Suspense>
-                </Canvas>
+                        <Suspense
+                            fallback={null}
+                        >
+                            <EffectComposer
+                                multisampling={0}
+                            >
+                                <Bloom
+                                    luminanceThreshold={
+                                        0.78
+                                    }
+                                    intensity={
+                                        0.42
+                                    }
+                                    mipmapBlur
+                                />
+
+                                <Vignette
+                                    darkness={
+                                        0.18
+                                    }
+                                    offset={
+                                        0.24
+                                    }
+                                />
+                            </EffectComposer>
+                        </Suspense>
+                    </Canvas>
+                </div>
 
                 <DistrictNavigator
                     activeDistrictId={

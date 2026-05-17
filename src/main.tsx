@@ -1,7 +1,10 @@
+import * as RAPIER from '@dimforge/rapier3d-compat';
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { App } from './App';
 import './style.css';
+
+await RAPIER.init();
 
 const root = document.getElementById('root');
 
