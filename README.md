@@ -23,6 +23,11 @@ There will be a service that watches changes in your git repository organization
 
 Basically, the more you work, the more developed this virtual town becomes!
 
+## Development workflow
+
+See [CI/CD workflow](docs/ci-cd-workflow.md) for the current pull request,
+prelive validation, and production release path.
+
 ## Support Us
 
 If you like this product, please share 💬, star ⭐, and spread the word 🌍!
