@@ -2,6 +2,7 @@ import * as RAPIER from '@dimforge/rapier3d-compat';
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { App } from './App';
+import { AdaptiveQualityProvider } from './adaptive/AdaptiveQualityContext';
 import './style.css';
 
 await RAPIER.init();
@@ -14,6 +15,8 @@ if (!root) {
 
 createRoot(root).render(
     <React.StrictMode>
-        <App />
+        <AdaptiveQualityProvider>
+            <App />
+        </AdaptiveQualityProvider>
     </React.StrictMode>
 );

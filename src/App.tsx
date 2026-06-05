@@ -16,6 +16,9 @@ import {
 import { Hud } from './components/Hud';
 import { TownWorld } from './components/TownWorld';
 
+import { useAdaptiveQuality, AdaptiveQualityManager } from './adaptive/AdaptiveQualityContext';
+
+
 import type { InteractionState } from './town/geometry';
 
 import {
@@ -75,6 +78,8 @@ export function App() {
         nearestEntityId: null,
         playerPosition: [0, 0, 310],
     });
+
+    const { preset } = useAdaptiveQuality();
 
     const controls =
         useMemo(
@@ -178,12 +183,13 @@ export function App() {
                             near: 1,
                             far: 2400,
                         }}
-                        dpr={[1, 2]}
+                        dpr={preset.dpr}
                         gl={{
                             antialias: true,
                             alpha: false,
+                            powerPreference: 'high-performance',
                         }}
-                        shadows
+                        shadows={preset.shadowDistance > 0}
                         fallback={
                             <div className="webgl-fallback">
                                 WebGL is not
@@ -195,6 +201,8 @@ export function App() {
                             attach="background"
                             args={['#78bff2']}
                         />
+
+                        <AdaptiveQualityManager />
 
                         <fog
                             attach="fog"
@@ -236,32 +244,34 @@ export function App() {
                             </Physics>
                         </Suspense>
 
-                        <Suspense
-                            fallback={null}
-                        >
-                            <EffectComposer
-                                multisampling={0}
+                        {preset.postProcessing ? (
+                            <Suspense
+                                fallback={null}
                             >
-                                <Bloom
-                                    luminanceThreshold={
-                                        0.78
-                                    }
-                                    intensity={
-                                        0.42
-                                    }
-                                    mipmapBlur
-                                />
+                                <EffectComposer
+                                    multisampling={0}
+                                >
+                                    <Bloom
+                                        luminanceThreshold={
+                                            0.78
+                                        }
+                                        intensity={
+                                            preset.bloomIntensity
+                                        }
+                                        mipmapBlur
+                                    />
 
-                                <Vignette
-                                    darkness={
-                                        0.18
-                                    }
-                                    offset={
-                                        0.24
-                                    }
-                                />
-                            </EffectComposer>
-                        </Suspense>
+                                    <Vignette
+                                        darkness={
+                                            0.18
+                                        }
+                                        offset={
+                                            0.24
+                                        }
+                                    />
+                                </EffectComposer>
+                            </Suspense>
+                        ) : null}
                     </Canvas>
                 </div>
 

@@ -75,6 +75,8 @@ export function Hud({
               <span>Changelog</span>
             </button>
           ) : null}
+
+
         </div>
       </div>
 
