@@ -3,8 +3,9 @@ import { useFrame, type ThreeEvent } from '@react-three/fiber';
 import { CuboidCollider, RigidBody, type RapierRigidBody } from '@react-three/rapier';
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState, type ComponentProps, type RefObject } from 'react';
 import * as THREE from 'three';
+import { getConnectedEntityIds, getTownConnectionPairs } from '../town/connections';
 import { distance2d, findNearestEntity, midpoint, resolveBlockedPosition, type InteractionState } from '../town/geometry';
-import { townDistricts, townEntities, type TownEntity, type Vec3 } from '../town/townData';
+import { townDistricts, townEntities, type TownDistrict, type TownEntity, type Vec3 } from '../town/townData';
 
 interface TownWorldProps {
     selectedEntityId: string | null;
@@ -34,9 +35,7 @@ interface PlayerCameraRef {
     current: PlayerCameraState;
 }
 
-const connectionPairs = townEntities.flatMap((entity) =>
-    entity.connections.map((targetId) => ({ sourceId: entity.id, targetId }))
-);
+const connectionPairs = getTownConnectionPairs(townEntities);
 
 const unifiedInboxPosition: Vec3 = [-420, 0, 120];
 
@@ -96,6 +95,10 @@ export function TownWorld({
     const [groundClickEffect, setGroundClickEffect] = useState<GroundClickEffect | null>(null);
     const groundClickEffectIdRef = useRef(0);
     const arrivalTimeoutRef = useRef<number | null>(null);
+    const connectedEntityIds = useMemo(
+        () => new Set(getConnectedEntityIds(selectedEntityId, connectionPairs)),
+        [selectedEntityId]
+    );
 
     useEffect(() => {
         return () => {
@@ -180,7 +183,7 @@ export function TownWorld({
             <CloudLayer />
             <RoadNetwork />
             <DistrictLabels />
-            <ConnectionNetwork />
+            <ConnectionNetwork selectedEntityId={selectedEntityId} />
             <InboundSignalNetwork />
             <OpenAILogoLandmark />
             {townEntities.map((entity) => (
@@ -188,6 +191,7 @@ export function TownWorld({
                     key={entity.id}
                     entity={entity}
                     selected={entity.id === selectedEntityId}
+                    connected={connectedEntityIds.has(entity.id)}
                     targeted={entity.id === travelTargetEntityId}
                     arriving={entity.id === arrivalEntityId}
                     onTravel={handleEntityTravel}
@@ -284,17 +288,40 @@ function Terrain() {
                 </mesh>
                 <CuboidCollider args={[1800, 1, 1600]} position={[0, -2, 0]} />
             </RigidBody>
-            {townDistricts.map((district) => (
-                <mesh key={district.id} rotation={[-Math.PI / 2, 0, 0]} position={[district.center[0], -0.82, district.center[2]]}>
-                    <circleGeometry args={[district.radius, 56]} />
-                    <meshStandardMaterial color={district.color} roughness={0.92} transparent opacity={0.13} />
-                </mesh>
+            {townDistricts.map((district, index) => (
+                <DistrictGroundAura key={district.id} district={district} index={index} />
             ))}
             <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.72, 220]}>
                 <circleGeometry args={[92, 48]} />
                 <meshStandardMaterial color="#eef4ec" roughness={0.78} />
             </mesh>
         </>
+    );
+}
+
+
+function DistrictGroundAura({ district, index }: { district: TownDistrict; index: number }) {
+    const meshRef = useRef<THREE.Mesh>(null);
+
+    useFrame((state) => {
+        if (!meshRef.current) {
+            return;
+        }
+
+        const wave = Math.sin(state.clock.elapsedTime * 0.7 + index * 0.85);
+        meshRef.current.scale.setScalar(1 + wave * 0.012);
+
+        const material = meshRef.current.material;
+        if (material instanceof THREE.MeshStandardMaterial) {
+            material.opacity = 0.11 + wave * 0.025;
+        }
+    });
+
+    return (
+        <mesh ref={meshRef} rotation={[-Math.PI / 2, 0, 0]} position={[district.center[0], -0.82, district.center[2]]}>
+            <circleGeometry args={[district.radius, 56]} />
+            <meshStandardMaterial color={district.color} roughness={0.92} transparent opacity={0.13} />
+        </mesh>
     );
 }
 
@@ -684,22 +711,20 @@ function RoadNetwork() {
     );
 }
 
-function ConnectionNetwork() {
+function ConnectionNetwork({ selectedEntityId }: { selectedEntityId: string | null }) {
     return (
         <>
             {connectionPairs.map((pair) => {
-                const source = townEntities.find((entity) => entity.id === pair.sourceId);
-                const target = townEntities.find((entity) => entity.id === pair.targetId);
-                if (!source || !target || source.id > target.id) {
-                    return null;
-                }
+                const selectedConnection = selectedEntityId ? pair.sourceId === selectedEntityId || pair.targetId === selectedEntityId : false;
+                const defaultEmphasis = !selectedEntityId && (pair.source.tier === 'foundation' || pair.target.tier === 'foundation');
 
                 return (
                     <ConnectionLink
-                        key={`${source.id}-${target.id}`}
-                        source={source}
-                        target={target}
-                        selected={source.tier === 'foundation' || target.tier === 'foundation'}
+                        key={pair.id}
+                        source={pair.source}
+                        target={pair.target}
+                        emphasized={selectedConnection || defaultEmphasis}
+                        dimmed={Boolean(selectedEntityId) && !selectedConnection}
                     />
                 );
             })}
@@ -784,18 +809,22 @@ function InboundSignalPacket({ curve, color, speed, phase, size }: { curve: THRE
 interface ConnectionLinkProps {
     source: TownEntity;
     target: TownEntity;
-    selected: boolean;
+    emphasized: boolean;
+    dimmed: boolean;
 }
 
-function ConnectionLink({ source, target, selected }: ConnectionLinkProps) {
+function ConnectionLink({ source, target, emphasized, dimmed }: ConnectionLinkProps) {
     const start: Vec3 = [source.position[0], 20, source.position[2]];
     const end: Vec3 = [target.position[0], 20, target.position[2]];
-    const accent = selected ? '#f8d766' : source.accentColor;
+    const accent = emphasized ? '#f8d766' : source.accentColor;
+    const radius = emphasized ? 1.55 : 0.72;
+    const opacity = dimmed ? 0.08 : emphasized ? 0.48 : 0.2;
+    const speed = dimmed ? 0.08 : emphasized ? 0.18 : 0.12;
 
     return (
         <>
-            <OrientedCylinder start={start} end={end} radius={selected ? 1.45 : 0.72} color={accent} opacity={selected ? 0.45 : 0.2} />
-            <FlowPacket start={start} end={end} color={accent} speed={selected ? 0.18 : 0.12} />
+            <OrientedCylinder start={start} end={end} radius={radius} color={accent} opacity={opacity} />
+            <FlowPacket start={start} end={end} color={accent} speed={speed} opacity={dimmed ? 0.28 : 1} />
         </>
     );
 }
@@ -831,6 +860,15 @@ interface OrientedCylinderProps {
 }
 
 function OrientedCylinder({ start, end, radius, color, opacity }: OrientedCylinderProps) {
+    const meshRef = useRef<THREE.Mesh>(null);
+
+    useFrame((_, delta) => {
+        const material = meshRef.current?.material;
+        if (material instanceof THREE.MeshStandardMaterial) {
+            material.opacity = THREE.MathUtils.damp(material.opacity, opacity, 9, delta);
+        }
+    });
+
     const transform = useMemo(() => {
         const source = new THREE.Vector3(...start);
         const target = new THREE.Vector3(...end);
@@ -845,7 +883,7 @@ function OrientedCylinder({ start, end, radius, color, opacity }: OrientedCylind
     }, [start, end]);
 
     return (
-        <mesh position={transform.center} quaternion={transform.quaternion}>
+        <mesh ref={meshRef} position={transform.center} quaternion={transform.quaternion}>
             <cylinderGeometry args={[radius, radius, transform.length, 12]} />
             <meshStandardMaterial color={color} emissive={color} emissiveIntensity={0.25} transparent opacity={opacity} />
         </mesh>
@@ -857,13 +895,14 @@ interface FlowPacketProps {
     end: Vec3;
     color: string;
     speed: number;
+    opacity: number;
 }
 
-function FlowPacket({ start, end, color, speed }: FlowPacketProps) {
+function FlowPacket({ start, end, color, speed, opacity }: FlowPacketProps) {
     const ref = useRef<THREE.Mesh>(null);
     const offset = useMemo(() => Math.random(), []);
 
-    useFrame((state) => {
+    useFrame((state, delta) => {
         if (!ref.current) {
             return;
         }
@@ -874,12 +913,17 @@ function FlowPacket({ start, end, color, speed }: FlowPacketProps) {
             26 + Math.sin(t * Math.PI) * 18,
             THREE.MathUtils.lerp(start[2], end[2], t)
         );
+
+        const material = ref.current.material;
+        if (material instanceof THREE.MeshStandardMaterial) {
+            material.opacity = THREE.MathUtils.damp(material.opacity, opacity, 9, delta);
+        }
     });
 
     return (
         <mesh ref={ref}>
             <sphereGeometry args={[3.2, 14, 14]} />
-            <meshStandardMaterial color={color} emissive={color} emissiveIntensity={0.9} />
+            <meshStandardMaterial color={color} emissive={color} emissiveIntensity={0.9} transparent={opacity < 1} opacity={opacity} />
         </mesh>
     );
 }
@@ -887,6 +931,7 @@ function FlowPacket({ start, end, color, speed }: FlowPacketProps) {
 interface EntityBuildingProps {
     entity: TownEntity;
     selected: boolean;
+    connected: boolean;
     targeted: boolean;
     arriving: boolean;
     onTravel: (entityId: string) => void;
@@ -895,16 +940,19 @@ interface EntityBuildingProps {
 function EntityBuilding({
     entity,
     selected,
+    connected,
     targeted,
     arriving,
     onTravel,
 }: EntityBuildingProps) {
     const [hovered, setHovered] = useState(false);
+    const groupRef = useRef<THREE.Group>(null);
 
     const highlighted =
         selected ||
         targeted ||
         arriving ||
+        connected ||
         hovered;
 
     const scale =
@@ -918,6 +966,15 @@ function EntityBuilding({
         entity.tier === 'foundation'
             ? '#063d38'
             : '#1f3340';
+
+    useFrame((_, delta) => {
+        if (!groupRef.current) {
+            return;
+        }
+
+        const nextScale = THREE.MathUtils.damp(groupRef.current.scale.x, scale, 10, delta);
+        groupRef.current.scale.setScalar(nextScale);
+    });
 
     const handleClick = (
         event: ThreeEvent<MouseEvent>
@@ -937,7 +994,7 @@ function EntityBuilding({
             ]}
         >
             <group
-                scale={scale}
+                ref={groupRef}
                 onClick={handleClick}
                 onPointerOver={(event) => {
                     event.stopPropagation();
@@ -956,8 +1013,12 @@ function EntityBuilding({
                     highlighted={highlighted}
                 />
 
-                {highlighted ? (
+                {selected || targeted || arriving || hovered ? (
                     <SelectionAura entity={entity} />
+                ) : null}
+
+                {connected && !selected && !targeted && !arriving ? (
+                    <ConnectedAura entity={entity} />
                 ) : null}
 
                 {arriving ? (
@@ -1122,6 +1183,31 @@ function SelectionAura({
                 />
             </mesh>
         </group>
+    );
+}
+
+function ConnectedAura({ entity }: { entity: TownEntity }) {
+    const ringRef = useRef<THREE.Mesh>(null);
+
+    useFrame((state) => {
+        if (!ringRef.current) {
+            return;
+        }
+
+        const pulse = 1 + Math.sin(state.clock.elapsedTime * 2.5) * 0.05;
+        ringRef.current.scale.setScalar(pulse);
+
+        const material = ringRef.current.material;
+        if (material instanceof THREE.MeshStandardMaterial) {
+            material.opacity = 0.24 + Math.sin(state.clock.elapsedTime * 2.5) * 0.06;
+        }
+    });
+
+    return (
+        <mesh ref={ringRef} position={[0, 4.6, 0]} rotation={[Math.PI / 2, 0, 0]}>
+            <torusGeometry args={[Math.max(entity.size[0], entity.size[2]) * 0.56, 1.6, 10, 56]} />
+            <meshStandardMaterial color="#f8d766" emissive="#f8d766" emissiveIntensity={0.52} transparent opacity={0.26} roughness={0.28} />
+        </mesh>
     );
 }
 function ArrivalPulse({ entity }: { entity: TownEntity }) {
@@ -2281,6 +2367,15 @@ function Platform({ entity, emissiveIntensity }: { entity: TownEntity; emissiveI
     );
 }
 
+
+function isTextInputTarget(target: EventTarget | null): boolean {
+    if (!(target instanceof HTMLElement)) {
+        return false;
+    }
+
+    return target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement || target instanceof HTMLSelectElement || target.isContentEditable;
+}
+
 interface PlayerControllerProps {
     setInteraction: (state: InteractionState) => void;
     onSelect: (entityId: string | null) => void;
@@ -2307,10 +2402,16 @@ function PlayerController({
     const [, getKeys] = useKeyboardControls<ControlName>();
     const positionRef = useRef<Vec3>([0, 6, 310]);
     const yawRef = useRef(0);
+    const movementSpeedRef = useRef(0);
+    const turnSpeedRef = useRef(0);
     const nearestRef = useRef<string | null>(null);
 
     useEffect(() => {
         const handleKeyDown = (event: KeyboardEvent) => {
+            if (isTextInputTarget(event.target)) {
+                return;
+            }
+
             if ((event.code === 'KeyE' || event.code === 'Enter') && nearestRef.current) {
                 onSelect(nearestRef.current);
             }
@@ -2342,14 +2443,17 @@ function PlayerController({
                 setTravelTargetPosition(null);
             }
 
-            yawRef.current -= turnInput * delta * 2.4;
+            const targetTurnSpeed = turnInput * 2.4;
+            const targetMoveSpeed = moveInput * (keys.interact ? 62 : 118);
+            turnSpeedRef.current = THREE.MathUtils.damp(turnSpeedRef.current, targetTurnSpeed, 12, delta);
+            movementSpeedRef.current = THREE.MathUtils.damp(movementSpeedRef.current, targetMoveSpeed, 12, delta);
+            yawRef.current -= turnSpeedRef.current * delta;
 
             const forward = new THREE.Vector3(-Math.sin(yawRef.current), 0, -Math.cos(yawRef.current));
-            const speed = keys.interact ? 62 : 118;
 
-            if (moveInput !== 0) {
+            if (Math.abs(movementSpeedRef.current) > 0.1) {
                 next = resolveBlockedPosition(
-                    [current[0] + forward.x * moveInput * speed * delta, 6, current[2] + forward.z * moveInput * speed * delta],
+                    [current[0] + forward.x * movementSpeedRef.current * delta, 6, current[2] + forward.z * movementSpeedRef.current * delta],
                     current,
                     townEntities
                 );
@@ -2357,9 +2461,11 @@ function PlayerController({
             }
 
             if (avatarRef.current) {
-                avatarRef.current.rotation.y = yawRef.current;
+                avatarRef.current.rotation.y = THREE.MathUtils.damp(avatarRef.current.rotation.y, yawRef.current, 14, delta);
             }
         } else {
+            movementSpeedRef.current = THREE.MathUtils.damp(movementSpeedRef.current, 0, 10, delta);
+            turnSpeedRef.current = THREE.MathUtils.damp(turnSpeedRef.current, 0, 10, delta);
             const destination = travelTarget?.position ?? travelTargetPosition;
 
             if (destination) {
@@ -2389,7 +2495,7 @@ function PlayerController({
                     yawRef.current = Math.atan2(-directionX, -directionZ);
 
                     if (avatarRef.current) {
-                        avatarRef.current.rotation.y = yawRef.current;
+                        avatarRef.current.rotation.y = THREE.MathUtils.damp(avatarRef.current.rotation.y, yawRef.current, 12, delta);
                     }
                 }
             }

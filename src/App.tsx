@@ -23,6 +23,16 @@ import {
     townDistricts,
     townEntities,
 } from './town/townData';
+import {
+    defaultTownExplorerFilters,
+    filterTownEntities,
+    hasActiveTownExplorerFilters,
+    type TownExplorerFilters,
+} from './town/explorer';
+import {
+    getTownSystemOverview,
+    sortTownEntitiesForNavigator,
+} from './town/systemStats';
 
 type ControlName =
     | 'forward'
@@ -50,6 +60,13 @@ export function App() {
         activeDistrictId,
         setActiveDistrictId,
     ] = useState<string | null>(null);
+
+    const [
+        explorerFilters,
+        setExplorerFilters,
+    ] = useState<TownExplorerFilters>(
+        defaultTownExplorerFilters
+    );
 
     const [
         interaction,
@@ -252,11 +269,17 @@ export function App() {
                     activeDistrictId={
                         activeDistrictId
                     }
+                    filters={
+                        explorerFilters
+                    }
                     selectedEntityId={
                         selectedEntityId
                     }
                     onSelectDistrict={
                         setActiveDistrictId
+                    }
+                    onFiltersChange={
+                        setExplorerFilters
                     }
                     onSelectEntity={
                         handleNavigatorSelect
@@ -290,14 +313,20 @@ export function App() {
 
 function DistrictNavigator({
     activeDistrictId,
+    filters,
     selectedEntityId,
     onSelectDistrict,
+    onFiltersChange,
     onSelectEntity,
 }: {
     activeDistrictId: string | null;
+    filters: TownExplorerFilters;
     selectedEntityId: string | null;
     onSelectDistrict: (
         districtId: string | null
+    ) => void;
+    onFiltersChange: (
+        filters: TownExplorerFilters
     ) => void;
     onSelectEntity: (
         entityId: string
@@ -316,6 +345,41 @@ function DistrictNavigator({
                       district.id ===
                       activeDistrictId
               );
+
+    const filteredEntities =
+        useMemo(
+            () =>
+                filterTownEntities(
+                    townEntities,
+                    filters
+                ),
+            [filters]
+        );
+
+    const systemOverview =
+        useMemo(
+            () =>
+                getTownSystemOverview(
+                    townDistricts,
+                    townEntities,
+                    filteredEntities
+                ),
+            [filteredEntities]
+        );
+
+    const visibleEntityCount =
+        filteredEntities.filter(
+            (entity) =>
+                activeDistrictId ===
+                    null ||
+                entity.clusterId ===
+                    activeDistrictId
+        ).length;
+
+    const filtersActive =
+        hasActiveTownExplorerFilters(
+            filters
+        );
 
     if (collapsed) {
         return (
@@ -364,6 +428,127 @@ function DistrictNavigator({
                 </button>
             </div>
 
+            <div className="district-navigator__overview" aria-label="Town system overview">
+                <div>
+                    <strong>
+                        {systemOverview.visibleEntities}
+                    </strong>
+                    <span>
+                        of {systemOverview.totalEntities} systems
+                    </span>
+                </div>
+                <div>
+                    <strong>
+                        {systemOverview.statusCounts.resilient}
+                    </strong>
+                    <span>
+                        resilient
+                    </span>
+                </div>
+                <div>
+                    <strong>
+                        {systemOverview.tierCounts.critical}
+                    </strong>
+                    <span>
+                        critical
+                    </span>
+                </div>
+            </div>
+
+            <div className="district-navigator__search">
+                <label htmlFor="district-navigator-search">
+                    Find systems
+                </label>
+                <input
+                    id="district-navigator-search"
+                    type="search"
+                    value={filters.query}
+                    placeholder="Search by name, role, or flow"
+                    onChange={(event) =>
+                        onFiltersChange({
+                            ...filters,
+                            query: event
+                                .target
+                                .value,
+                        })
+                    }
+                />
+            </div>
+
+            <div className="district-navigator__filters">
+                <label>
+                    <span>Tier</span>
+                    <select
+                        value={filters.tier}
+                        onChange={(event) =>
+                            onFiltersChange({
+                                ...filters,
+                                tier: event
+                                    .target
+                                    .value as TownExplorerFilters['tier'],
+                            })
+                        }
+                    >
+                        <option value="all">
+                            All
+                        </option>
+                        <option value="foundation">
+                            Foundation
+                        </option>
+                        <option value="critical">
+                            Critical
+                        </option>
+                        <option value="business">
+                            Business
+                        </option>
+                        <option value="edge">
+                            Edge
+                        </option>
+                    </select>
+                </label>
+
+                <label>
+                    <span>Status</span>
+                    <select
+                        value={filters.status}
+                        onChange={(event) =>
+                            onFiltersChange({
+                                ...filters,
+                                status: event
+                                    .target
+                                    .value as TownExplorerFilters['status'],
+                            })
+                        }
+                    >
+                        <option value="all">
+                            All
+                        </option>
+                        <option value="resilient">
+                            Resilient
+                        </option>
+                        <option value="operational">
+                            Operational
+                        </option>
+                        <option value="observed">
+                            Observed
+                        </option>
+                    </select>
+                </label>
+
+                {filtersActive ? (
+                    <button
+                        type="button"
+                        onClick={() =>
+                            onFiltersChange(
+                                defaultTownExplorerFilters
+                            )
+                        }
+                    >
+                        Clear
+                    </button>
+                ) : null}
+            </div>
+
             <div className="district-navigator__tabs">
                 <button
                     type="button"
@@ -404,22 +589,46 @@ function DistrictNavigator({
                             {
                                 district.name
                             }
+                            <small>
+                                {
+                                    systemOverview.districtSummaries.find(
+                                        (summary) =>
+                                            summary.id ===
+                                            district.id
+                                    )?.visibleEntities ?? 0
+                                }
+                            </small>
                         </button>
                     )
                 )}
             </div>
 
             <div className="district-navigator__groups">
+                {visibleEntityCount === 0 ? (
+                    <div className="district-navigator__empty">
+                        No matching systems.
+                    </div>
+                ) : null}
+
                 {visibleDistricts.map(
                     (district) => {
                         const districtEntities =
-                            townEntities.filter(
-                                (
-                                    entity
-                                ) =>
-                                    entity.clusterId ===
-                                    district.id
+                            sortTownEntitiesForNavigator(
+                                filteredEntities.filter(
+                                    (
+                                        entity
+                                    ) =>
+                                        entity.clusterId ===
+                                        district.id
+                                )
                             );
+
+                        if (
+                            districtEntities.length ===
+                            0
+                        ) {
+                            return null;
+                        }
 
                         return (
                             <section
@@ -441,6 +650,17 @@ function DistrictNavigator({
                                             district.name
                                         }
                                     </strong>
+                                    <small>
+                                        {
+                                            districtEntities.length
+                                        } / {
+                                            systemOverview.districtSummaries.find(
+                                                (summary) =>
+                                                    summary.id ===
+                                                    district.id
+                                            )?.totalEntities ?? 0
+                                        }
+                                    </small>
                                 </div>
 
                                 <p className="district-navigator__description">
@@ -484,6 +704,10 @@ function DistrictNavigator({
                                                     ·{' '}
                                                     {
                                                         entity.tier
+                                                    }{' '}
+                                                    ·{' '}
+                                                    {
+                                                        entity.status
                                                     }
                                                 </small>
                                             </button>
