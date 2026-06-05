@@ -69,6 +69,8 @@ jobs:
       BUCKET: ${{ vars.AWS_S3_BUCKET }}
       AWS_REGION: ${{ vars.AWS_REGION }}
       DIST_ID: ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }}
+      VITE_POSTHOG_KEY: ${{ vars.NEXT_PUBLIC_POSTHOG_KEY }}
+      VITE_POSTHOG_HOST: ${{ vars.NEXT_PUBLIC_POSTHOG_HOST }}
 
     steps:
       - name: Checkout
@@ -85,9 +87,6 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-
-      - name: Build static site
-        run: pnpm run build
 
       - name: Ensure AWS deployment config is present
         env:
@@ -113,6 +112,19 @@ jobs:
             echo "AWS_SECRET_ACCESS_KEY is not set" >&2
             exit 1
           fi
+
+          if [ -z "${VITE_POSTHOG_KEY}" ]; then
+            echo "VITE_POSTHOG_KEY is not set" >&2
+            exit 1
+          fi
+
+          if [ -z "${VITE_POSTHOG_HOST}" ]; then
+            echo "VITE_POSTHOG_HOST is not set" >&2
+            exit 1
+          fi
+
+      - name: Build static site
+        run: pnpm run build
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
