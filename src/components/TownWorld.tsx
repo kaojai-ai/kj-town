@@ -1,11 +1,12 @@
 import { OrbitControls, Text as DreiText, useKeyboardControls } from '@react-three/drei';
-import { useFrame, type ThreeEvent } from '@react-three/fiber';
+import { useFrame, useThree, type ThreeEvent } from '@react-three/fiber';
 import { CuboidCollider, RigidBody, type RapierRigidBody } from '@react-three/rapier';
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState, type ComponentProps, type RefObject } from 'react';
 import * as THREE from 'three';
 import { getConnectedEntityIds, getTownConnectionPairs } from '../town/connections';
-import { distance2d, findNearestEntity, midpoint, resolveBlockedPosition, type InteractionState } from '../town/geometry';
+import { distance2d, findNearestEntity, midpoint, resolveBlockedPosition, getEntityLODLevel, type EntityLODLevel, type InteractionState } from '../town/geometry';
 import { townDistricts, townEntities, type TownDistrict, type TownEntity, type Vec3 } from '../town/townData';
+import { useAdaptiveQuality } from '../adaptive/AdaptiveQualityContext';
 
 interface TownWorldProps {
     selectedEntityId: string | null;
@@ -84,6 +85,7 @@ export function TownWorld({
     travelTargetEntityId,
     setTravelTargetEntityId,
 }: TownWorldProps) {
+    const { updatePerfStats } = useAdaptiveQuality();
     const playerCameraRef = useRef<PlayerCameraState>({
         position: new THREE.Vector3(0, 6, 310),
         yaw: 0,
@@ -99,6 +101,32 @@ export function TownWorld({
         () => new Set(getConnectedEntityIds(selectedEntityId, connectionPairs)),
         [selectedEntityId]
     );
+
+    const entityVectors = useMemo(() => {
+        return townEntities.map(entity => new THREE.Vector3(...entity.position));
+    }, []);
+
+    const frustumRef = useRef(new THREE.Frustum());
+    const projScreenMatrixRef = useRef(new THREE.Matrix4());
+    const worldFrameCountRef = useRef(0);
+
+    useFrame(({ camera }) => {
+        projScreenMatrixRef.current.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
+        frustumRef.current.setFromProjectionMatrix(projScreenMatrixRef.current);
+
+        worldFrameCountRef.current++;
+        if (worldFrameCountRef.current % 15 === 0) {
+            let visibleCount = 0;
+            for (let i = 0; i < entityVectors.length; i++) {
+                if (frustumRef.current.containsPoint(entityVectors[i])) {
+                    visibleCount++;
+                }
+            }
+            updatePerfStats({
+                visibleBuildings: visibleCount
+            });
+        }
+    });
 
     useEffect(() => {
         return () => {
@@ -183,7 +211,7 @@ export function TownWorld({
             <CloudLayer />
             <RoadNetwork />
             <DistrictLabels />
-            <ConnectionNetwork selectedEntityId={selectedEntityId} />
+            <ConnectionNetwork selectedEntityId={selectedEntityId} frustumRef={frustumRef} />
             <InboundSignalNetwork />
             <OpenAILogoLandmark />
             {townEntities.map((entity) => (
@@ -195,6 +223,7 @@ export function TownWorld({
                     targeted={entity.id === travelTargetEntityId}
                     arriving={entity.id === arrivalEntityId}
                     onTravel={handleEntityTravel}
+                    frustumRef={frustumRef}
                 />
             ))}
             <PlayerController
@@ -224,14 +253,14 @@ function VisualizerCameraControls({ playerCameraRef }: { playerCameraRef: Player
     const controlsRef = useRef<any>(null);
     const focusPoint = useMemo(() => new THREE.Vector3(), []);
 
-    useFrame(() => {
+    useFrame((_, delta) => {
         if (!controlsRef.current) {
             return;
         }
 
         if (playerCameraRef.current.keyboardNavigating) {
             focusPoint.set(playerCameraRef.current.position.x, 34, playerCameraRef.current.position.z);
-            controlsRef.current.target.lerp(focusPoint, 0.1);
+            controlsRef.current.target.lerp(focusPoint, 1 - Math.exp(-14 * delta));
         }
 
         controlsRef.current.update();
@@ -256,7 +285,33 @@ function VisualizerCameraControls({ playerCameraRef }: { playerCameraRef: Player
     );
 }
 
+const LIGHT_SHADOW_CENTER = new THREE.Vector3(0, 48, 80);
+
 function SceneLighting() {
+    const { camera } = useThree();
+    const { preset, updatePerfStats } = useAdaptiveQuality();
+    const [castShadow, setCastShadow] = useState(true);
+    const frameCountRef = useRef(0);
+
+    useFrame(() => {
+        frameCountRef.current++;
+        if (frameCountRef.current % 15 !== 0) {
+            return;
+        }
+
+        const dist = camera.position.distanceTo(LIGHT_SHADOW_CENTER);
+        const shadowThreshold = preset.shadowDistance;
+        const nextCast = shadowThreshold > 0 && dist < shadowThreshold;
+        
+        if (nextCast !== castShadow) {
+            setCastShadow(nextCast);
+        }
+        
+        updatePerfStats({
+            shadowEnabled: nextCast
+        });
+    });
+
     return (
         <>
             <ambientLight intensity={0.64} />
@@ -264,7 +319,7 @@ function SceneLighting() {
             <directionalLight
                 position={[-360, 520, 260]}
                 intensity={1.95}
-                castShadow
+                castShadow={castShadow}
                 shadow-mapSize={[2048, 2048]}
                 shadow-bias={-0.0005}
             >
@@ -711,7 +766,12 @@ function RoadNetwork() {
     );
 }
 
-function ConnectionNetwork({ selectedEntityId }: { selectedEntityId: string | null }) {
+interface ConnectionNetworkProps {
+    selectedEntityId: string | null;
+    frustumRef: RefObject<THREE.Frustum>;
+}
+
+function ConnectionNetwork({ selectedEntityId, frustumRef }: ConnectionNetworkProps) {
     return (
         <>
             {connectionPairs.map((pair) => {
@@ -728,6 +788,7 @@ function ConnectionNetwork({ selectedEntityId }: { selectedEntityId: string | nu
                     />
                 );
             })}
+            <FlowPackets selectedEntityId={selectedEntityId} frustumRef={frustumRef} />
         </>
     );
 }
@@ -819,13 +880,9 @@ function ConnectionLink({ source, target, emphasized, dimmed }: ConnectionLinkPr
     const accent = emphasized ? '#f8d766' : source.accentColor;
     const radius = emphasized ? 1.55 : 0.72;
     const opacity = dimmed ? 0.08 : emphasized ? 0.48 : 0.2;
-    const speed = dimmed ? 0.08 : emphasized ? 0.18 : 0.12;
 
     return (
-        <>
-            <OrientedCylinder start={start} end={end} radius={radius} color={accent} opacity={opacity} />
-            <FlowPacket start={start} end={end} color={accent} speed={speed} opacity={dimmed ? 0.28 : 1} />
-        </>
+        <OrientedCylinder start={start} end={end} radius={radius} color={accent} opacity={opacity} />
     );
 }
 
@@ -890,41 +947,113 @@ function OrientedCylinder({ start, end, radius, color, opacity }: OrientedCylind
     );
 }
 
-interface FlowPacketProps {
-    start: Vec3;
-    end: Vec3;
-    color: string;
-    speed: number;
-    opacity: number;
+const tempObject = new THREE.Object3D();
+const tempColor = new THREE.Color();
+const tempPos = new THREE.Vector3();
+
+interface FlowPacketsProps {
+    selectedEntityId: string | null;
+    frustumRef: RefObject<THREE.Frustum>;
 }
 
-function FlowPacket({ start, end, color, speed, opacity }: FlowPacketProps) {
-    const ref = useRef<THREE.Mesh>(null);
-    const offset = useMemo(() => Math.random(), []);
+function FlowPackets({ selectedEntityId, frustumRef }: FlowPacketsProps) {
+    const meshRef = useRef<THREE.InstancedMesh>(null);
+    const { preset, updatePerfStats } = useAdaptiveQuality();
+    const frameCountRef = useRef(0);
 
-    useFrame((state, delta) => {
-        if (!ref.current) {
-            return;
+    // Create stable random offsets once per connection pair
+    const packetData = useMemo(() => {
+        return connectionPairs.map((pair) => {
+            const start: Vec3 = [pair.source.position[0], 20, pair.source.position[2]];
+            const end: Vec3 = [pair.target.position[0], 20, pair.target.position[2]];
+            return {
+                start,
+                end,
+                offset: Math.random(),
+            };
+        });
+    }, []);
+
+    useFrame((state) => {
+        if (!meshRef.current) return;
+
+        let activeCount = 0;
+
+        packetData.forEach((data, index) => {
+            const pair = connectionPairs[index];
+            const selectedConnection = selectedEntityId
+                ? pair.sourceId === selectedEntityId || pair.targetId === selectedEntityId
+                : false;
+            const defaultEmphasis =
+                !selectedEntityId &&
+                (pair.source.tier === 'foundation' || pair.target.tier === 'foundation');
+            const emphasized = selectedConnection || defaultEmphasis;
+            const dimmed = Boolean(selectedEntityId) && !selectedConnection;
+
+            const speed = dimmed ? 0.08 : emphasized ? 0.18 : 0.12;
+
+            const t = (state.clock.elapsedTime * speed + data.offset) % 1;
+            const x = THREE.MathUtils.lerp(data.start[0], data.end[0], t);
+            const y = 26 + Math.sin(t * Math.PI) * 18;
+            const z = THREE.MathUtils.lerp(data.start[2], data.end[2], t);
+
+            // LOD / Frustum Check:
+            // Calculate distance to camera
+            const dist = Math.hypot(
+                x - state.camera.position.x,
+                y - state.camera.position.y,
+                z - state.camera.position.z
+            );
+            
+            // Check if packet position is in the camera view frustum
+            const inFrustum = frustumRef.current ? frustumRef.current.containsPoint(tempPos.set(x, y, z)) : true;
+
+            const isSkippedByDensity = (index / packetData.length) >= preset.flowPacketDensity;
+
+            // If the packet is off-screen, skipped by density, or beyond max distance, set scale to 0
+            if (isSkippedByDensity || !inFrustum || dist > preset.flowPacketMaxDistance) {
+                tempObject.position.set(0, -9999, 0);
+                tempObject.scale.set(0, 0, 0);
+            } else {
+                tempObject.position.set(x, y, z);
+                // Set scale based on emphasis/dimmed state
+                const scale = dimmed ? 0.38 : emphasized ? 1.25 : 0.88;
+                tempObject.scale.setScalar(scale);
+                activeCount++;
+            }
+            
+            tempObject.updateMatrix();
+            meshRef.current!.setMatrixAt(index, tempObject.matrix);
+
+            // Calculate color
+            const baseColorHex = emphasized ? '#f8d766' : pair.source.accentColor;
+            tempColor.set(baseColorHex);
+            
+            // Fade the color for dimmed connections to simulate low opacity
+            if (dimmed) {
+                tempColor.multiplyScalar(0.28);
+            }
+            meshRef.current!.setColorAt(index, tempColor);
+        });
+
+        meshRef.current.instanceMatrix.needsUpdate = true;
+        if (meshRef.current.instanceColor) {
+            meshRef.current.instanceColor.needsUpdate = true;
         }
 
-        const t = (state.clock.elapsedTime * speed + offset) % 1;
-        ref.current.position.set(
-            THREE.MathUtils.lerp(start[0], end[0], t),
-            26 + Math.sin(t * Math.PI) * 18,
-            THREE.MathUtils.lerp(start[2], end[2], t)
-        );
-
-        const material = ref.current.material;
-        if (material instanceof THREE.MeshStandardMaterial) {
-            material.opacity = THREE.MathUtils.damp(material.opacity, opacity, 9, delta);
+        frameCountRef.current++;
+        if (frameCountRef.current % 15 === 0) {
+            updatePerfStats({
+                flowPacketInstances: activeCount
+            });
         }
     });
 
     return (
-        <mesh ref={ref}>
+        <instancedMesh ref={meshRef} args={[undefined as any, undefined as any, connectionPairs.length]}>
             <sphereGeometry args={[3.2, 14, 14]} />
-            <meshStandardMaterial color={color} emissive={color} emissiveIntensity={0.9} transparent={opacity < 1} opacity={opacity} />
-        </mesh>
+            <meshBasicMaterial transparent opacity={0.9} />
+        </instancedMesh>
     );
 }
 
@@ -935,6 +1064,7 @@ interface EntityBuildingProps {
     targeted: boolean;
     arriving: boolean;
     onTravel: (entityId: string) => void;
+    frustumRef: RefObject<THREE.Frustum>;
 }
 
 function EntityBuilding({
@@ -944,9 +1074,61 @@ function EntityBuilding({
     targeted,
     arriving,
     onTravel,
+    frustumRef,
 }: EntityBuildingProps) {
+    const { preset } = useAdaptiveQuality();
     const [hovered, setHovered] = useState(false);
+    const [visible, setVisible] = useState(true);
     const groupRef = useRef<THREE.Group>(null);
+    const { camera } = useThree();
+    const lodRef = useRef<EntityLODLevel>('none');
+    const [lod, setLod] = useState<EntityLODLevel>('none');
+    const frameCountRef = useRef(Math.floor(Math.random() * 10));
+    const outOfFrustumFramesRef = useRef(0);
+    const entityPositionVec3 = useMemo(() => new THREE.Vector3(...entity.position), [entity.position]);
+
+    useFrame(() => {
+        const inFrustum = frustumRef.current ? frustumRef.current.containsPoint(entityPositionVec3) : true;
+        
+        if (inFrustum) {
+            outOfFrustumFramesRef.current = 0;
+            if (!visible) {
+                setVisible(true);
+            }
+        } else {
+            if (visible) {
+                setVisible(false);
+            }
+            outOfFrustumFramesRef.current++;
+        }
+
+        frameCountRef.current++;
+        if (frameCountRef.current % preset.lodUpdateEveryFrames !== 0) {
+            return;
+        }
+
+        // Soft culling check: if we are out of frustum but under 120 frames, we keep the LOD loaded (inFrustum=true), but hidden.
+        // If we are out of frustum for 120+ frames, we unload it (inFrustum=false)
+        const checkFrustum = inFrustum || outOfFrustumFramesRef.current < 120;
+
+        const nextLod = getEntityLODLevel(
+            [camera.position.x, camera.position.y, camera.position.z],
+            entity.position,
+            checkFrustum,
+            preset.lodHighDistance,
+            preset.lodMediumDistance
+        );
+
+        if (nextLod !== lodRef.current) {
+            lodRef.current = nextLod;
+            setLod(nextLod);
+        }
+    });
+
+    const effectiveLod =
+        selected || targeted || arriving
+            ? 'high'
+            : lod;
 
     const highlighted =
         selected ||
@@ -954,6 +1136,13 @@ function EntityBuilding({
         arriving ||
         connected ||
         hovered;
+
+    const showLabel =
+        selected ||
+        targeted ||
+        arriving ||
+        hovered ||
+        effectiveLod !== 'low';
 
     const scale =
         selected || arriving
@@ -972,9 +1161,21 @@ function EntityBuilding({
             return;
         }
 
-        const nextScale = THREE.MathUtils.damp(groupRef.current.scale.x, scale, 10, delta);
+        const currentScale = groupRef.current.scale.x;
+        if (Math.abs(currentScale - scale) < 0.0002) {
+            if (currentScale !== scale) {
+                groupRef.current.scale.setScalar(scale);
+            }
+            return;
+        }
+
+        const nextScale = THREE.MathUtils.damp(currentScale, scale, 10, delta);
         groupRef.current.scale.setScalar(nextScale);
     });
+
+    if (effectiveLod === 'none') {
+        return <group ref={groupRef} visible={false} />;
+    }
 
     const handleClick = (
         event: ThreeEvent<MouseEvent>
@@ -995,6 +1196,7 @@ function EntityBuilding({
         >
             <group
                 ref={groupRef}
+                visible={visible}
                 onClick={handleClick}
                 onPointerOver={(event) => {
                     event.stopPropagation();
@@ -1011,13 +1213,14 @@ function EntityBuilding({
                 <BuildingShape
                     entity={entity}
                     highlighted={highlighted}
+                    lod={effectiveLod}
                 />
 
                 {selected || targeted || arriving || hovered ? (
                     <SelectionAura entity={entity} />
                 ) : null}
 
-                {connected && !selected && !targeted && !arriving ? (
+                {connected && !selected && !targeted && !arriving && effectiveLod !== 'low' ? (
                     <ConnectedAura entity={entity} />
                 ) : null}
 
@@ -1025,25 +1228,27 @@ function EntityBuilding({
                     <ArrivalPulse entity={entity} />
                 ) : null}
 
-                <Text
-                    position={[
-                        0,
-                        entity.size[1] + 18,
-                        0,
-                    ]}
-                    fontSize={
-                        entity.tier === 'foundation'
-                            ? 9.5
-                            : 7
-                    }
-                    color={labelColor}
-                    outlineWidth={0.18}
-                    outlineColor="#ffffff"
-                    anchorX="center"
-                    anchorY="middle"
-                >
-                    {entity.name}
-                </Text>
+                {showLabel ? (
+                    <Text
+                        position={[
+                            0,
+                            entity.size[1] + 18,
+                            0,
+                        ]}
+                        fontSize={
+                            entity.tier === 'foundation'
+                                ? 9.5
+                                : 7
+                        }
+                        color={labelColor}
+                        outlineWidth={0.18}
+                        outlineColor="#ffffff"
+                        anchorX="center"
+                        anchorY="middle"
+                    >
+                        {entity.name}
+                    </Text>
+                ) : null}
             </group>
 
             <CuboidCollider
@@ -1252,11 +1457,19 @@ function ArrivalPulse({ entity }: { entity: TownEntity }) {
 interface BuildingShapeProps {
     entity: TownEntity;
     highlighted: boolean;
+    lod: EntityLODLevel;
 }
 
 type SocialLogoKind = 'line' | 'facebook' | 'instagram' | 'lazada';
 
-function BuildingShape({ entity, highlighted }: BuildingShapeProps) {
+function BuildingShape({ entity, highlighted, lod }: BuildingShapeProps) {
+    if (lod === 'low') {
+        return <LowDetailBuilding entity={entity} />;
+    }
+
+    if (lod === 'medium') {
+        return <MediumDetailBuilding entity={entity} highlighted={highlighted} />;
+    }
     const emissiveIntensity = highlighted ? 0.34 : entity.tier === 'foundation' ? 0.18 : 0.05;
 
     if (entity.id === 'booking-management') {
@@ -1370,10 +1583,74 @@ function BuildingShape({ entity, highlighted }: BuildingShapeProps) {
     return <Shop entity={entity} emissiveIntensity={emissiveIntensity} />;
 }
 
-function BasePad({ entity }: { entity: TownEntity }) {
+const entityGeometryCache = {
+    basePads: new Map<string, THREE.CylinderGeometry>(),
+    mediumBuildings: new Map<string, THREE.BufferGeometry>(),
+    lowBuildings: new Map<string, THREE.BufferGeometry>(),
+};
+
+function MediumDetailBuilding({ entity, highlighted }: { entity: TownEntity; highlighted: boolean }) {
+    let geom = entityGeometryCache.mediumBuildings.get(entity.id);
+    if (!geom) {
+        if (entity.shape === 'database') {
+            geom = new THREE.CylinderGeometry(entity.size[0] * 0.45, entity.size[0] * 0.45, entity.size[1], 16);
+        } else {
+            geom = new THREE.BoxGeometry(entity.size[0] * 0.9, entity.size[1], entity.size[2] * 0.9);
+        }
+        entityGeometryCache.mediumBuildings.set(entity.id, geom);
+    }
+
     return (
-        <mesh receiveShadow position={[0, 2, 0]}>
-            <cylinderGeometry args={[Math.max(entity.size[0], entity.size[2]) * 0.62, Math.max(entity.size[0], entity.size[2]) * 0.72, 4, 8]} />
+        <group>
+            <BasePad entity={entity} />
+            <mesh castShadow receiveShadow position={[0, entity.size[1] * 0.5, 0]} geometry={geom}>
+                <meshStandardMaterial
+                    color={entity.color}
+                    emissive={highlighted ? entity.color : '#000000'}
+                    emissiveIntensity={highlighted ? 0.18 : 0}
+                    roughness={0.32}
+                    metalness={0.16}
+                />
+            </mesh>
+        </group>
+    );
+}
+
+function LowDetailBuilding({ entity }: { entity: TownEntity }) {
+    let geom = entityGeometryCache.lowBuildings.get(entity.id);
+    if (!geom) {
+        if (entity.shape === 'database') {
+            geom = new THREE.CylinderGeometry(entity.size[0] * 0.4, entity.size[0] * 0.4, entity.size[1] * 0.7, 12);
+        } else {
+            geom = new THREE.BoxGeometry(entity.size[0] * 0.8, entity.size[1] * 0.7, entity.size[2] * 0.8);
+        }
+        entityGeometryCache.lowBuildings.set(entity.id, geom);
+    }
+
+    return (
+        <group>
+            <BasePad entity={entity} />
+            <mesh castShadow receiveShadow position={[0, entity.size[1] * 0.35, 0]} geometry={geom}>
+                <meshStandardMaterial color={entity.color} roughness={0.45} metalness={0.08} />
+            </mesh>
+        </group>
+    );
+}
+
+function BasePad({ entity }: { entity: TownEntity }) {
+    let geom = entityGeometryCache.basePads.get(entity.id);
+    if (!geom) {
+        geom = new THREE.CylinderGeometry(
+            Math.max(entity.size[0], entity.size[2]) * 0.62,
+            Math.max(entity.size[0], entity.size[2]) * 0.72,
+            4,
+            8
+        );
+        entityGeometryCache.basePads.set(entity.id, geom);
+    }
+
+    return (
+        <mesh receiveShadow position={[0, 2, 0]} geometry={geom}>
             <meshStandardMaterial color="#edf1f4" roughness={0.6} />
         </mesh>
     );
@@ -2459,10 +2736,6 @@ function PlayerController({
                 );
                 positionRef.current = next;
             }
-
-            if (avatarRef.current) {
-                avatarRef.current.rotation.y = THREE.MathUtils.damp(avatarRef.current.rotation.y, yawRef.current, 14, delta);
-            }
         } else {
             movementSpeedRef.current = THREE.MathUtils.damp(movementSpeedRef.current, 0, 10, delta);
             turnSpeedRef.current = THREE.MathUtils.damp(turnSpeedRef.current, 0, 10, delta);
@@ -2493,10 +2766,6 @@ function PlayerController({
                     );
                     positionRef.current = next;
                     yawRef.current = Math.atan2(-directionX, -directionZ);
-
-                    if (avatarRef.current) {
-                        avatarRef.current.rotation.y = THREE.MathUtils.damp(avatarRef.current.rotation.y, yawRef.current, 12, delta);
-                    }
                 }
             }
         }
@@ -2506,19 +2775,26 @@ function PlayerController({
         playerCameraRef.current.keyboardNavigating = hasKeyboardInput || Boolean(travelTarget) || Boolean(travelTargetPosition);
         bodyRef.current?.setNextKinematicTranslation({ x: positionRef.current[0], y: positionRef.current[1], z: positionRef.current[2] });
 
+        // Update avatar position and rotation directly in the render tick (eliminates physics tick stutter)
+        if (avatarRef.current) {
+            avatarRef.current.position.set(positionRef.current[0], positionRef.current[1], positionRef.current[2]);
+            avatarRef.current.rotation.y = THREE.MathUtils.damp(avatarRef.current.rotation.y, yawRef.current, 12, delta);
+        }
+
         const nearest = findNearestEntity(positionRef.current, townEntities, 58);
         nearestRef.current = nearest?.id ?? null;
         setInteraction({ nearestEntityId: nearestRef.current, playerPosition: positionRef.current });
-
     });
 
     return (
-        <RigidBody ref={bodyRef} type="kinematicPosition" colliders={false} position={[positionRef.current[0], positionRef.current[1], positionRef.current[2]]}>
-            <CuboidCollider args={[7, 10, 7]} position={[0, 10, 0]} />
-            <group ref={avatarRef}>
+        <>
+            <RigidBody ref={bodyRef} type="kinematicPosition" colliders={false} position={[positionRef.current[0], positionRef.current[1], positionRef.current[2]]}>
+                <CuboidCollider args={[7, 10, 7]} position={[0, 10, 0]} />
+            </RigidBody>
+            <group ref={avatarRef} position={[positionRef.current[0], positionRef.current[1], positionRef.current[2]]}>
                 <PlayerMascotAvatar />
             </group>
-        </RigidBody>
+        </>
     );
 }
 
