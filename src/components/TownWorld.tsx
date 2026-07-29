@@ -1319,6 +1319,30 @@ function BuildingShape({ entity, highlighted }: BuildingShapeProps) {
         return <LineSetupWizard entity={entity} emissiveIntensity={emissiveIntensity} />;
     }
 
+    if (entity.id === 'whatsapp-channel') {
+        return <WhatsAppGateway entity={entity} emissiveIntensity={emissiveIntensity} />;
+    }
+
+    if (entity.id === 'shopee-browser-bridge') {
+        return <BrowserSessionBridge entity={entity} emissiveIntensity={emissiveIntensity} />;
+    }
+
+    if (entity.id === 'conversation-lineage') {
+        return <ConversationSwitchyard entity={entity} emissiveIntensity={emissiveIntensity} />;
+    }
+
+    if (entity.id === 'unsend-registry') {
+        return <UnsendRegistry entity={entity} emissiveIntensity={emissiveIntensity} />;
+    }
+
+    if (entity.id === 'checkslip-chat-relay') {
+        return <CheckSlipChatRelay entity={entity} emissiveIntensity={emissiveIntensity} />;
+    }
+
+    if (entity.id === 'swag-sticker-pavilion') {
+        return <StickerPavilion entity={entity} emissiveIntensity={emissiveIntensity} />;
+    }
+
     if (entity.id === 'facebook-channel') {
         return <SocialLogoBuilding entity={entity} logo="facebook" emissiveIntensity={emissiveIntensity} />;
     }
@@ -1935,6 +1959,146 @@ function LineSetupWizard({ entity, emissiveIntensity }: { entity: TownEntity; em
             <mesh position={[0, 70, 0]} rotation={[Math.PI / 2, 0, 0]}>
                 <torusGeometry args={[32, 2.2, 12, 48]} />
                 <meshStandardMaterial color="#f0fff6" emissive="#22d96f" emissiveIntensity={0.42 + emissiveIntensity} />
+            </mesh>
+        </group>
+    );
+}
+
+function WhatsAppGateway({ entity, emissiveIntensity }: { entity: TownEntity; emissiveIntensity: number }) {
+    return (
+        <group>
+            <Gateway entity={entity} emissiveIntensity={emissiveIntensity} />
+            <mesh position={[0, 45, entity.size[2] * 0.45]} rotation={[Math.PI / 2, 0, 0]}>
+                <torusGeometry args={[16, 3.4, 14, 48]} />
+                <meshStandardMaterial color="#ffffff" emissive="#ffffff" emissiveIntensity={0.24} roughness={0.26} />
+            </mesh>
+            <mesh position={[10, 33, entity.size[2] * 0.45]} rotation={[0, 0, -0.7]}>
+                <coneGeometry args={[4, 12, 12]} />
+                <meshStandardMaterial color="#ffffff" roughness={0.3} />
+            </mesh>
+            <mesh position={[0, 45, entity.size[2] * 0.49]} rotation={[0, 0, -0.55]}>
+                <torusGeometry args={[7, 1.8, 10, 28, Math.PI * 1.25]} />
+                <meshStandardMaterial color="#25d366" emissive="#25d366" emissiveIntensity={0.2} />
+            </mesh>
+        </group>
+    );
+}
+
+function BrowserSessionBridge({ entity, emissiveIntensity }: { entity: TownEntity; emissiveIntensity: number }) {
+    const sessionRef = useRef<THREE.Mesh>(null);
+
+    useFrame((state) => {
+        if (sessionRef.current) {
+            sessionRef.current.rotation.y = state.clock.elapsedTime * 0.7;
+        }
+    });
+
+    return (
+        <group>
+            <BasePad entity={entity} />
+            {[-26, 26].map((x) => (
+                <mesh key={x} castShadow position={[x, 30, 0]}>
+                    <boxGeometry args={[20, 52, 30]} />
+                    <meshStandardMaterial color={entity.color} emissive={entity.color} emissiveIntensity={emissiveIntensity} roughness={0.38} />
+                </mesh>
+            ))}
+            <mesh castShadow position={[0, 38, 0]}>
+                <boxGeometry args={[38, 7, 22]} />
+                <meshStandardMaterial color="#fff0eb" roughness={0.3} metalness={0.18} />
+            </mesh>
+            <mesh castShadow position={[0, 57, 0]}>
+                <boxGeometry args={[48, 30, 5]} />
+                <meshStandardMaterial color="#2f3542" emissive="#ee4d2d" emissiveIntensity={0.12} roughness={0.24} />
+            </mesh>
+            <mesh ref={sessionRef} position={[0, 82, 0]}>
+                <octahedronGeometry args={[10, 0]} />
+                <meshStandardMaterial color="#79f2c6" emissive="#13b8a8" emissiveIntensity={0.66} roughness={0.2} />
+            </mesh>
+        </group>
+    );
+}
+
+function ConversationSwitchyard({ entity, emissiveIntensity }: { entity: TownEntity; emissiveIntensity: number }) {
+    const railColors = ['#25d366', '#ee4d2d', '#06c755'];
+    return (
+        <group>
+            <Platform entity={entity} emissiveIntensity={emissiveIntensity} />
+            {railColors.map((color, index) => (
+                <group key={color}>
+                    <mesh position={[-28 + index * 28, 38, 4]}>
+                        <boxGeometry args={[5, 34, 5]} />
+                        <meshStandardMaterial color={color} emissive={color} emissiveIntensity={0.34} roughness={0.3} />
+                    </mesh>
+                    <mesh position={[-28 + index * 28, 58, 4]}>
+                        <sphereGeometry args={[7, 14, 14]} />
+                        <meshStandardMaterial color={color} emissive={color} emissiveIntensity={0.4} />
+                    </mesh>
+                </group>
+            ))}
+            <mesh position={[0, 78, 4]} rotation={[Math.PI / 2, 0, 0]}>
+                <torusGeometry args={[38, 3, 12, 48]} />
+                <meshStandardMaterial color={entity.accentColor} emissive={entity.color} emissiveIntensity={0.48} />
+            </mesh>
+            <Text position={[0, 79, 9]} fontSize={10} color="#5259c7" anchorX="center" anchorY="middle">PARENT</Text>
+        </group>
+    );
+}
+
+function UnsendRegistry({ entity, emissiveIntensity }: { entity: TownEntity; emissiveIntensity: number }) {
+    return (
+        <group>
+            <Platform entity={entity} emissiveIntensity={emissiveIntensity} />
+            <mesh castShadow position={[0, 48, 6]}>
+                <boxGeometry args={[48, 28, 6]} />
+                <meshStandardMaterial color="#f1f3f6" emissive={entity.color} emissiveIntensity={0.08} roughness={0.48} />
+            </mesh>
+            <mesh position={[0, 48, 10]} rotation={[0, 0, Math.PI / 4]}>
+                <boxGeometry args={[4, 38, 3]} />
+                <meshStandardMaterial color="#8c96a5" emissive="#8c96a5" emissiveIntensity={0.18} />
+            </mesh>
+            <Text position={[0, 25, 12]} fontSize={7} color="#687281" anchorX="center" anchorY="middle">UNSENT</Text>
+        </group>
+    );
+}
+
+function CheckSlipChatRelay({ entity, emissiveIntensity }: { entity: TownEntity; emissiveIntensity: number }) {
+    return (
+        <group>
+            <Bus entity={entity} emissiveIntensity={emissiveIntensity} />
+            <mesh castShadow position={[0, 28, 34]}>
+                <boxGeometry args={[30, 38, 4]} />
+                <meshStandardMaterial color="#fffaf0" roughness={0.4} />
+            </mesh>
+            <mesh position={[0, 33, 37]}>
+                <boxGeometry args={[22, 3, 2]} />
+                <meshStandardMaterial color="#13b8a8" emissive="#13b8a8" emissiveIntensity={0.62} />
+            </mesh>
+            <mesh position={[0, 72, 0]} rotation={[Math.PI / 2, 0, 0]}>
+                <torusGeometry args={[30, 2.8, 12, 48, Math.PI * 1.65]} />
+                <meshStandardMaterial color="#ff9f43" emissive="#ff9f43" emissiveIntensity={0.56} />
+            </mesh>
+        </group>
+    );
+}
+
+function StickerPavilion({ entity, emissiveIntensity }: { entity: TownEntity; emissiveIntensity: number }) {
+    const colors = ['#13b8a8', '#ff6fa8', '#ffd05a', '#8bd3ff', '#ff9f43', '#7c83fd', '#25d366', '#ee4d2d'];
+    return (
+        <group>
+            <Platform entity={entity} emissiveIntensity={emissiveIntensity} />
+            {colors.map((color, index) => {
+                const column = index % 4;
+                const row = Math.floor(index / 4);
+                return (
+                    <mesh key={color} castShadow position={[-27 + column * 18, 42 + row * 20, 12]} rotation={[0, 0, (column - 1.5) * 0.06]}>
+                        <cylinderGeometry args={[7, 7, 3, 12]} />
+                        <meshStandardMaterial color={color} emissive={color} emissiveIntensity={0.18} roughness={0.34} />
+                    </mesh>
+                );
+            })}
+            <mesh castShadow position={[0, 76, 0]}>
+                <coneGeometry args={[42, 12, 8]} />
+                <meshStandardMaterial color="#fff5a8" roughness={0.44} />
             </mesh>
         </group>
     );
