@@ -84,6 +84,8 @@ jobs:
         uses: openai/codex-action@v1
         with:
           openai-api-key: ${{ secrets.OPENAI_API_KEY }}
+          codex-version: '0.145.0'
+          permission-profile: ':workspace'
           prompt-file: instructions/upgrade-town.md
 
       - name: Build project
