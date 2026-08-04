@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type { TownEntity } from "../town/townData";
 import { getInitialChangelogOpenState } from "./changelogState";
+import { formatLastMigrateContent } from "./lastMigrate";
 import lastMigrateRaw from "../../migrations/LAST_MIGRATE.md?raw";
 
 interface HudProps {
@@ -17,7 +18,7 @@ const tierLabels: Record<TownEntity["tier"], string> = {
   edge: "Edge",
 };
 
-const lastMigrateContent = lastMigrateRaw.trim();
+const lastMigrateContent = formatLastMigrateContent(lastMigrateRaw);
 
 export function Hud({
   selectedEntity,
