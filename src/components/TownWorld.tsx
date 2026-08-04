@@ -1480,6 +1480,10 @@ function BuildingShape({ entity, highlighted, lod }: BuildingShapeProps) {
         return <BookingBrandStudio entity={entity} emissiveIntensity={emissiveIntensity} />;
     }
 
+    if (entity.id === 'weekly-allotment-observatory') {
+        return <WeeklyAllotmentObservatory entity={entity} emissiveIntensity={emissiveIntensity} />;
+    }
+
     if (entity.id === 'booking-link-kiosk') {
         return <BookingLinkKiosk entity={entity} emissiveIntensity={emissiveIntensity} />;
     }
@@ -1518,6 +1522,18 @@ function BuildingShape({ entity, highlighted, lod }: BuildingShapeProps) {
 
     if (entity.id === 'unified-inbox') {
         return <InboxConcourse entity={entity} emissiveIntensity={emissiveIntensity} />;
+    }
+
+    if (entity.id === 'inbox-note-board') {
+        return <PinnedNoteBoard entity={entity} emissiveIntensity={emissiveIntensity} />;
+    }
+
+    if (entity.id === 'voice-message-dock') {
+        return <VoiceMessageDock entity={entity} emissiveIntensity={emissiveIntensity} />;
+    }
+
+    if (entity.id === 'thai-english-translation-gate') {
+        return <TranslationGate entity={entity} emissiveIntensity={emissiveIntensity} />;
     }
 
     if (entity.id === 'chatbot-orchestration') {
@@ -1878,6 +1894,49 @@ function BookingClub({ entity, emissiveIntensity }: { entity: TownEntity; emissi
     );
 }
 
+function WeeklyAllotmentObservatory({ entity, emissiveIntensity }: { entity: TownEntity; emissiveIntensity: number }) {
+    const sweepRef = useRef<THREE.Mesh>(null);
+
+    useFrame((state) => {
+        if (sweepRef.current) {
+            sweepRef.current.position.x = -31 + ((state.clock.elapsedTime * 8) % 62);
+        }
+    });
+
+    return (
+        <group>
+            <Platform entity={entity} emissiveIntensity={emissiveIntensity} />
+            <mesh castShadow position={[0, 55, 4]} rotation={[-0.12, 0, 0]}>
+                <boxGeometry args={[78, 48, 5]} />
+                <meshStandardMaterial color="#173b43" emissive="#51c98f" emissiveIntensity={0.08 + emissiveIntensity} roughness={0.28} />
+            </mesh>
+            {Array.from({ length: 7 }, (_, day) =>
+                Array.from({ length: 3 }, (_, resource) => {
+                    const available = (day + resource * 2) % 4 !== 0;
+                    return (
+                        <mesh key={`${day}-${resource}`} position={[-31 + day * 10.3, 70 - resource * 14, 7.2]}>
+                            <boxGeometry args={[7.2, 8, 1.4]} />
+                            <meshStandardMaterial
+                                color={available ? '#79f2c6' : '#ff8c9a'}
+                                emissive={available ? '#51c98f' : '#ff5f78'}
+                                emissiveIntensity={available ? 0.28 : 0.18}
+                                roughness={0.34}
+                            />
+                        </mesh>
+                    );
+                })
+            )}
+            <mesh ref={sweepRef} position={[-31, 55, 8.4]}>
+                <boxGeometry args={[1.2, 43, 1]} />
+                <meshStandardMaterial color="#ffffff" emissive="#ffffff" emissiveIntensity={0.7} transparent opacity={0.72} />
+            </mesh>
+            <Text position={[0, 87, 8]} fontSize={8} color="#effff7" anchorX="center" anchorY="middle">
+                7 DAY GRID
+            </Text>
+        </group>
+    );
+}
+
 function BookingBrandStudio({
     entity,
     emissiveIntensity,
@@ -2213,6 +2272,76 @@ function InboxConcourse({ entity, emissiveIntensity }: { entity: TownEntity; emi
             <mesh castShadow position={[13, 89, 47]}>
                 <sphereGeometry args={[3.2, 16, 16]} />
                 <meshStandardMaterial color={entity.color} emissive={entity.color} emissiveIntensity={0.4} />
+            </mesh>
+        </group>
+    );
+}
+
+function PinnedNoteBoard({ entity, emissiveIntensity }: { entity: TownEntity; emissiveIntensity: number }) {
+    return (
+        <group>
+            <Platform entity={entity} emissiveIntensity={emissiveIntensity} />
+            <mesh castShadow position={[0, 50, 5]}>
+                <boxGeometry args={[58, 42, 5]} />
+                <meshStandardMaterial color="#715b2d" roughness={0.62} />
+            </mesh>
+            {[-18, 0, 18].map((x, index) => (
+                <group key={x} position={[x, 51 + (index % 2) * 3, 9]} rotation={[0, 0, index === 1 ? 0.08 : -0.05]}>
+                    <mesh castShadow>
+                        <boxGeometry args={[15, 19, 1.2]} />
+                        <meshStandardMaterial color={index === 1 ? '#fff0a8' : '#fff9dc'} emissive="#f4c95d" emissiveIntensity={0.08} roughness={0.55} />
+                    </mesh>
+                    <mesh position={[0, 9, 1.2]}>
+                        <sphereGeometry args={[2.2, 10, 10]} />
+                        <meshStandardMaterial color={index === 1 ? '#ff5f78' : '#8bd3ff'} emissive={index === 1 ? '#ff5f78' : '#8bd3ff'} emissiveIntensity={0.42} />
+                    </mesh>
+                </group>
+            ))}
+            <Text position={[0, 78, 8]} fontSize={7} color="#fff9dc" anchorX="center" anchorY="middle">TEAM ONLY</Text>
+        </group>
+    );
+}
+
+function VoiceMessageDock({ entity, emissiveIntensity }: { entity: TownEntity; emissiveIntensity: number }) {
+    const waveform = [8, 18, 28, 14, 22, 10, 25, 16, 8];
+    return (
+        <group>
+            <Platform entity={entity} emissiveIntensity={emissiveIntensity} />
+            <mesh castShadow position={[0, 48, 5]}>
+                <boxGeometry args={[58, 32, 8]} />
+                <meshStandardMaterial color="#173b54" emissive="#8bd3ff" emissiveIntensity={0.1 + emissiveIntensity} roughness={0.3} />
+            </mesh>
+            {waveform.map((height, index) => (
+                <mesh key={index} position={[-19 + index * 5, 48, 10]}>
+                    <boxGeometry args={[2.2, height, 1.5]} />
+                    <meshStandardMaterial color="#bfeaff" emissive="#8bd3ff" emissiveIntensity={0.46} />
+                </mesh>
+            ))}
+            <mesh position={[-28, 48, 11]} rotation={[0, 0, -Math.PI / 2]}>
+                <coneGeometry args={[7, 10, 3]} />
+                <meshStandardMaterial color="#ffffff" emissive="#8bd3ff" emissiveIntensity={0.38} />
+            </mesh>
+        </group>
+    );
+}
+
+function TranslationGate({ entity, emissiveIntensity }: { entity: TownEntity; emissiveIntensity: number }) {
+    return (
+        <group>
+            <Gateway entity={entity} emissiveIntensity={emissiveIntensity} />
+            <Text position={[-18, 49, 8]} fontSize={17} color="#ffffff" anchorX="center" anchorY="middle">TH</Text>
+            <Text position={[18, 49, 8]} fontSize={15} color="#ffffff" anchorX="center" anchorY="middle">EN</Text>
+            <mesh position={[0, 57, 8]} rotation={[0, 0, -Math.PI / 2]}>
+                <coneGeometry args={[4, 10, 3]} />
+                <meshStandardMaterial color="#79f2c6" emissive="#79f2c6" emissiveIntensity={0.55} />
+            </mesh>
+            <mesh position={[0, 40, 8]} rotation={[0, 0, Math.PI / 2]}>
+                <coneGeometry args={[4, 10, 3]} />
+                <meshStandardMaterial color="#ffd05a" emissive="#ffd05a" emissiveIntensity={0.55} />
+            </mesh>
+            <mesh castShadow position={[0, 80, 0]}>
+                <boxGeometry args={[38, 7, 9]} />
+                <meshStandardMaterial color="#f8efff" emissive="#b98cff" emissiveIntensity={0.2 + emissiveIntensity} roughness={0.28} />
             </mesh>
         </group>
     );
