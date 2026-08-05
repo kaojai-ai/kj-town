@@ -38,19 +38,10 @@ export function filterTownEntities(entities: readonly TownEntity[], filters: Tow
 
 function getEntitySearchText(entity: TownEntity): string {
     return [
-        entity.id,
         entity.name,
         entity.kind,
         entity.tier,
         entity.status,
-        entity.shape,
-        entity.summary,
-        entity.details.purpose,
-        entity.details.systemRole,
-        ...entity.details.flows,
-        ...entity.details.reliability,
-        ...entity.details.related,
-        ...entity.connections,
     ]
         .join(' ')
         .toLowerCase();
