@@ -6,14 +6,48 @@ import { getTownSystemOverview, sortTownEntitiesForNavigator } from './systemSta
 import { townDistricts, townEntities, type TownEntity } from './townData';
 
 describe('town explorer filters', () => {
-    it('matches entities by name and summary text', () => {
+    it('matches entities by name, kind, tier, or status', () => {
         const results = filterTownEntities(townEntities, {
             ...defaultTownExplorerFilters,
             query: 'database',
         });
 
         assert.ok(results.some((entity) => entity.id === 'database-cluster'));
-        assert.ok(results.every((entity) => entity.name.toLowerCase().includes('database') || entity.summary.toLowerCase().includes('database') || entity.details.systemRole.toLowerCase().includes('database') || entity.details.purpose.toLowerCase().includes('database') || entity.details.related.some((related) => related.toLowerCase().includes('database')) || entity.details.flows.some((flow) => flow.toLowerCase().includes('database')) || entity.details.reliability.some((item) => item.toLowerCase().includes('database')) || entity.connections.some((connection) => connection.includes('database'))));
+        assert.ok(results.every((entity) =>
+            [
+                entity.name,
+                entity.kind,
+                entity.tier,
+                entity.status,
+            ]
+                .join(' ')
+                .toLowerCase()
+                .includes('database')
+        ));
+    });
+
+    it('does not match fields outside name, kind, tier, and status', () => {
+        const entity: TownEntity = {
+            ...townEntities[0],
+            id: 'excluded-search-term',
+            name: 'Allowed Name',
+            summary: 'summary-only-search-term',
+        };
+
+        assert.deepEqual(
+            filterTownEntities([entity], {
+                ...defaultTownExplorerFilters,
+                query: 'summary-only-search-term',
+            }),
+            []
+        );
+        assert.deepEqual(
+            filterTownEntities([entity], {
+                ...defaultTownExplorerFilters,
+                query: 'excluded-search-term',
+            }),
+            []
+        );
     });
 
     it('combines query, tier, and status filters', () => {

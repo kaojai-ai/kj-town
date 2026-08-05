@@ -473,7 +473,7 @@ function DistrictNavigator({
                     id="district-navigator-search"
                     type="search"
                     value={filters.query}
-                    placeholder="Search by name, role, or flow"
+                    placeholder="Search by name, kind, tier, or status"
                     onChange={(event) =>
                         onFiltersChange({
                             ...filters,
