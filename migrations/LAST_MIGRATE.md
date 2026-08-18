@@ -1,5 +1,3 @@
-1785821543
-- Opened a seven-day Allotment Observatory for comparing resource availability in one booking grid.
-- Added a private Pinned Note Board with attributed team notes and personal or shared follow-up pins.
-- Docked in-thread voice-message playback beside the Unified Inbox.
-- Built a bidirectional Thai-English translation gate with language detection and an editable-draft checkpoint.
+1787029391
+- Added a dedicated Star Gallery to the Unified Inbox for quickly filtering priority conversations.
+- Added visible star markers plus star/unstar controls for desktop and narrow inbox views.

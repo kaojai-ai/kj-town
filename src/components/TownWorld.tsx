@@ -2243,6 +2243,19 @@ function InboxConcourse({ entity, emissiveIntensity }: { entity: TownEntity; emi
             }),
         []
     );
+    const starShape = useMemo(() => {
+        const shape = new THREE.Shape();
+        const points = Array.from({ length: 10 }, (_, index) => {
+            const radius = index % 2 === 0 ? 10 : 4.4;
+            const angle = Math.PI / 2 + index * Math.PI / 5;
+            return new THREE.Vector2(Math.cos(angle) * radius, Math.sin(angle) * radius);
+        });
+
+        shape.moveTo(points[0].x, points[0].y);
+        points.slice(1).forEach((point) => shape.lineTo(point.x, point.y));
+        shape.closePath();
+        return shape;
+    }, []);
 
     return (
         <group>
@@ -2273,6 +2286,41 @@ function InboxConcourse({ entity, emissiveIntensity }: { entity: TownEntity; emi
                 <sphereGeometry args={[3.2, 16, 16]} />
                 <meshStandardMaterial color={entity.color} emissive={entity.color} emissiveIntensity={0.4} />
             </mesh>
+            <group position={[0, 34, 47]}>
+                <mesh castShadow position={[0, 0, -1]}>
+                    <boxGeometry args={[78, 13, 6]} />
+                    <meshStandardMaterial color="#27423f" emissive="#f4c95d" emissiveIntensity={0.08 + emissiveIntensity} roughness={0.3} />
+                </mesh>
+                <mesh castShadow position={[-25, 0, 3]} rotation={[0, 0, -Math.PI / 2]}>
+                    <extrudeGeometry args={[starShape, { depth: 2.5, bevelEnabled: true, bevelSegments: 2, bevelSize: 0.6, bevelThickness: 0.6 }]} />
+                    <meshStandardMaterial color="#ffd45c" emissive="#f4c95d" emissiveIntensity={0.55} roughness={0.26} />
+                </mesh>
+                <Text position={[10, 0, 3.2]} fontSize={7} color="#fff7cf" anchorX="center" anchorY="middle">STAR</Text>
+            </group>
+            {[-23, 0, 23].map((x, index) => (
+                <group key={`starred-conversation-${x}`} position={[x, 52, 44]}>
+                    <mesh castShadow>
+                        <boxGeometry args={[19, 24, 4]} />
+                        <meshStandardMaterial color={index === 1 ? '#fff7d6' : '#f3fff0'} emissive="#f4c95d" emissiveIntensity={0.08} roughness={0.32} />
+                    </mesh>
+                    <mesh position={[5.5, 6.5, 2.8]} scale={0.3} rotation={[0, 0, -Math.PI / 2]}>
+                        <extrudeGeometry args={[starShape, { depth: 2, bevelEnabled: false }]} />
+                        <meshStandardMaterial color="#ffd45c" emissive="#f4c95d" emissiveIntensity={0.48} />
+                    </mesh>
+                </group>
+            ))}
+            {[-43, 43].map((x, index) => (
+                <group key={`star-control-${x}`} position={[x, 22, 30]}>
+                    <mesh castShadow position={[0, 6, 0]}>
+                        <cylinderGeometry args={[3.4, 4.2, 22, 12]} />
+                        <meshStandardMaterial color="#496b66" roughness={0.38} metalness={0.16} />
+                    </mesh>
+                    <mesh position={[0, 18, 0]} scale={0.38} rotation={[Math.PI / 2, 0, -Math.PI / 2]}>
+                        <extrudeGeometry args={[starShape, { depth: 2, bevelEnabled: false }]} />
+                        <meshStandardMaterial color={index === 0 ? '#8bd3ff' : '#79f2c6'} emissive={index === 0 ? '#8bd3ff' : '#79f2c6'} emissiveIntensity={0.44} />
+                    </mesh>
+                </group>
+            ))}
         </group>
     );
 }
