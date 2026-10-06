@@ -19,10 +19,22 @@ jobs:
     outputs:
       final_message: ${{ steps.run_codex.outputs.final-message }}
     steps:
+      - name: Require release token
+        shell: bash
+        env:
+          RELEASE_GITHUB_TOKEN: ${{ secrets.KJ_RELEASE_GITHUB_TOKEN }}
+        run: |
+          if [[ -z "${RELEASE_GITHUB_TOKEN}" ]]; then
+            echo "::error::KJ_RELEASE_GITHUB_TOKEN must be available to kj-town with contents write access so upgrade pushes trigger deployment."
+            exit 1
+          fi
+
       - name: Checkout repository
         uses: actions/checkout@v6
         with:
           fetch-depth: 0
+          # Match dev-tools releases: bot pushes must trigger the deployment workflow.
+          token: ${{ secrets.KJ_RELEASE_GITHUB_TOKEN }}
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v6
@@ -104,8 +116,6 @@ jobs:
 
       - name: Commit and push changes
         shell: bash
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           if [[ -z "$(git status --porcelain)" ]]; then
             echo "No changes detected after Codex run."
