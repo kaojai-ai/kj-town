@@ -1,3 +1,5 @@
+import { operationalEntities } from './operationalEntities';
+
 export type Vec3 = readonly [number, number, number];
 
 export type EntityKind = 'core' | 'infra' | 'service' | 'channel' | 'integration' | 'ai';
@@ -1106,6 +1108,7 @@ export const townEntities: readonly TownEntity[] = [
         },
         connections: ['rag-library', 'ai-engine', 'monitoring-tower'],
     },
+    ...operationalEntities,
 ];
 
 export const entityById = new Map(townEntities.map((entity) => [entity.id, entity]));

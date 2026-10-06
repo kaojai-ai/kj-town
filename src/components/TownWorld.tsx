@@ -7,6 +7,7 @@ import { getConnectedEntityIds, getTownConnectionPairs } from '../town/connectio
 import { distance2d, findNearestEntity, midpoint, resolveBlockedPosition, getEntityLODLevel, type EntityLODLevel, type InteractionState } from '../town/geometry';
 import { townDistricts, townEntities, type TownDistrict, type TownEntity, type Vec3 } from '../town/townData';
 import { useAdaptiveQuality } from '../adaptive/AdaptiveQualityContext';
+import { isOperationalLandmark, OperationalLandmark } from './OperationalLandmarks';
 
 interface TownWorldProps {
     selectedEntityId: string | null;
@@ -747,6 +748,15 @@ function RoadNetwork() {
         [[420, 0, -230], [305, 0, -150], 16],
         [[305, 0, -150], [230, 0, -235], 13],
         [[-230, 0, 80], [-230, 0, 190], 14],
+        [[-430, 0, -125], [-430, 0, 120], 14],
+        [[-430, 0, -125], [-300, 0, -135], 12],
+        [[-430, 0, -125], [-560, 0, -125], 12],
+        [[-560, 0, -125], [-665, 0, -115], 12],
+        [[-430, 0, -125], [-425, 0, -290], 12],
+        [[-425, 0, -290], [-545, 0, -290], 14],
+        [[-545, 0, -290], [-230, 0, -320], 14],
+        [[-45, 0, 300], [-45, 0, 390], 12],
+        [[-45, 0, 390], [30, 0, 350], 12],
     ];
 
     return (
@@ -1253,9 +1263,9 @@ function EntityBuilding({
 
             <CuboidCollider
                 args={[
-                    entity.size[0] * 0.33,
+                    entity.size[0] * (isOperationalLandmark(entity.id) ? 0.5 : 0.33),
                     entity.size[1] * 0.5,
-                    entity.size[2] * 0.33,
+                    entity.size[2] * (isOperationalLandmark(entity.id) ? 0.5 : 0.33),
                 ]}
                 position={[
                     0,
@@ -1471,6 +1481,10 @@ function BuildingShape({ entity, highlighted, lod }: BuildingShapeProps) {
         return <MediumDetailBuilding entity={entity} highlighted={highlighted} />;
     }
     const emissiveIntensity = highlighted ? 0.34 : entity.tier === 'foundation' ? 0.18 : 0.05;
+
+    if (isOperationalLandmark(entity.id)) {
+        return <OperationalLandmark entity={entity} emissiveIntensity={emissiveIntensity} />;
+    }
 
     if (entity.id === 'booking-management') {
         return <BookingClub entity={entity} emissiveIntensity={emissiveIntensity} />;
