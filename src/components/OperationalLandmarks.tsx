@@ -53,6 +53,12 @@ export function OperationalLandmark({ entity, emissiveIntensity }: { entity: Tow
         {entity.id === 'catalog-import-depot' && <CatalogDepot />}
         {entity.id === 'preset-reply-workshop' && <ReplyWorkshop />}
         {entity.id === 'staff-notification-belfry' && <StaffBelfry />}
+        {entity.id === 'order-chat-waiting-room' && <OrderWaitingRooms />}
+        {entity.id === 'workspace-signwriter' && <WorkspaceSignwriter />}
+        {entity.id === 'public-comment-court' && <PublicCourt />}
+        {entity.id === 'inbox-history-archive' && <HistoryArchive />}
+        {entity.id === 'cortex-reading-room' && <ReadingRoom />}
+
     </group>;
 }
 
@@ -236,5 +242,73 @@ function StaffBelfry() {
         <Sign at={[0, 27, 9.2]} size={3}>CATEGORY / CHAT SCOPE</Sign>
         <Sign at={[0, 20, 9.2]} size={3}>{push ? 'WEB PUSH' : 'IN APP'}</Sign>
         <Control x={0} label="PREVIEW ALERT ROUTE" width={47} onClick={() => setPush(current => !current)} />
+    </group>;
+}
+
+// Mounted boards rest on the plinth; all controls remain inside the fixed footprint.
+function NoticeBoard({ lines, color = '#24464c' }: { lines: string[]; color?: string }) {
+    return <group>
+        <Block at={[0, 39, 0]} size={[90, 58, 5]} color={color} />
+        {lines.map((line, index) => <Sign key={index} at={[0, 62 - index * 9, 2.7]} size={3.2}>{line}</Sign>)}
+    </group>;
+}
+
+function OrderWaitingRooms() {
+    const [messages, setMessages] = useState([false, false]);
+    return <group>
+        {['LAZADA', 'TIKTOK SHOP'].map((market, index) => <group key={market} position={[(index - 0.5) * 46, 0, 0]}>
+            <Block at={[0, 37, 0]} size={[42, 54, 5]} color="#3c3657" />
+            <Sign at={[0, 59, 2.7]} size={3.2}>{market}</Sign>
+            <Sign at={[0, 48, 2.7]} size={2.8}>SYNC / REIMPORT</Sign>
+            <Block at={[0, 34, 3]} size={[36, 16, 1]} color={messages[index] ? '#83cfaa' : '#efd797'} />
+            <Sign at={[0, 34, 3.6]} size={2.5} color="#24464c">{messages[index] ? 'INBOX: 1 MESSAGE' : 'EMPTY: OUTSIDE INBOX'}</Sign>
+            <Sign at={[0, 21, 2.7]} size={2.5}>ORDER CHAT READY</Sign>
+        </group>)}
+        <Control x={0} label="DEMO: MESSAGE / RESET" width={78}
+            onClick={() => setMessages(current => current.map(value => !value))} />
+    </group>;
+}
+
+function WorkspaceSignwriter() {
+    const [description, setDescription] = useState(true);
+    const [logo, setLogo] = useState(true);
+    return <group>
+        <NoticeBoard lines={['ADMIN + CONNECTED AI', 'SELECTED WORKSPACE', description ? 'DESCRIPTION: BUSINESS SIDEKICK' : 'DESCRIPTION: CLEARED', logo ? 'LOGO: IMAGE URL' : 'LOGO: CLEARED', 'INDEPENDENT FIELDS']} />
+        <Control x={-25} label={description ? 'CLEAR TEXT' : 'SET TEXT'} width={44} onClick={() => setDescription(value => !value)} />
+        <Control x={25} label={logo ? 'CLEAR LOGO' : 'SET LOGO'} width={44} onClick={() => setLogo(value => !value)} />
+    </group>;
+}
+
+function PublicCourt() {
+    const [publicReply, setPublicReply] = useState(true);
+    const [reconnect, setReconnect] = useState(false);
+    return <group>
+        <NoticeBoard color={publicReply ? '#365a72' : '#43564d'} lines={[
+            'FACEBOOK / INSTAGRAM', publicReply ? 'PUBLIC · SOURCE POST #42' : 'PRIVATE MESSAGE',
+            publicReply ? 'COMMENT: IS THIS AVAILABLE?' : 'DIRECT: IS THIS AVAILABLE?',
+            publicReply ? 'CAUTION: REPLY IS PUBLIC' : 'PRIVATE REPLY COMPOSER',
+            reconnect ? 'FB SEND: RECONNECT REQUIRED' : 'DEMO FACEBOOK SEND FAILURE',
+        ]} />
+        <Control x={-25} label="PUBLIC / PRIVATE" width={45} onClick={() => setPublicReply(value => !value)} />
+        <Control x={25} label={reconnect ? 'RESET DEMO' : 'FAIL FB SEND'} width={44} onClick={() => setReconnect(value => !value)} />
+    </group>;
+}
+
+function HistoryArchive() {
+    const [plan, setPlan] = useState(0);
+    const windows = ['FREE: 30 DAYS', 'PAID: 180 DAYS', 'CUSTOM: 365 DAYS', 'UNLIMITED'];
+    return <group>
+        <NoticeBoard lines={['HISTORY READING WINDOW', windows[plan], 'MESSAGE AGE: 200 DAYS',
+            plan < 2 ? 'OUTSIDE WINDOW · UPGRADE' : 'MESSAGE ACCESSIBLE', 'CUSTOM / UNLIMITED PRESERVED']} />
+        <Control x={0} label="PREVIEW PLAN / OVERRIDE" width={82} onClick={() => setPlan(value => (value + 1) % windows.length)} />
+    </group>;
+}
+
+function ReadingRoom() {
+    const [gazette, setGazette] = useState(false);
+    return <group>
+        <NoticeBoard lines={gazette ? ['KAOJAI PRODUCT GAZETTE', 'OCT 20: ORDER CHATS', 'OCT 27: PUBLIC CONTEXT', 'HISTORY / CORTEX / RECONNECT', 'READ UPDATES INSIDE THE APP'] :
+            ['CORTEX · MESSAGE CONTEXT', 'SOURCE MESSAGE #42', 'CUSTOMER: OPEN ON SUNDAY?', 'LEARNING RESULT FOR #42', 'REVIEW LEARNING BESIDE SOURCE']} />
+        <Control x={0} label={gazette ? 'VIEW CORTEX DEMO' : 'READ PRODUCT UPDATES'} width={78} onClick={() => setGazette(value => !value)} />
     </group>;
 }

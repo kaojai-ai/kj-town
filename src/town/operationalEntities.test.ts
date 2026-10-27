@@ -32,11 +32,13 @@ describe('migrated operational landmarks', () => {
     it('makes feature ownership discoverable from the existing modules', () => {
         const pairs = getTownConnectionPairs(townEntities);
         const inboxNeighbors = getConnectedEntityIds('unified-inbox', pairs);
-        for (const id of ['inbox-case-board', 'website-widget-studio', 'preset-reply-workshop', 'staff-notification-belfry']) {
+        for (const id of ['inbox-case-board', 'website-widget-studio', 'preset-reply-workshop', 'staff-notification-belfry', 'order-chat-waiting-room', 'public-comment-court', 'inbox-history-archive', 'cortex-reading-room']) {
             assert.ok(inboxNeighbors.includes(id), id);
         }
         assert.ok(getConnectedEntityIds('booking-management', pairs).includes('booking-intake'));
         assert.ok(getConnectedEntityIds('partner-exchange', pairs).includes('catalog-import-depot'));
+        assert.ok(getConnectedEntityIds('auth-service', pairs).includes('workspace-signwriter'));
+        assert.ok(getConnectedEntityIds('ai-engine', pairs).includes('workspace-signwriter'));
         assert.ok(getConnectedEntityIds('inbox-case-board', pairs).includes('issue-management'));
     });
 });

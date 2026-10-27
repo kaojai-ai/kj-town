@@ -1,6 +1,6 @@
-1791286027
-- 1788858007: Added a booking intake lockhouse, Inbox casework arcade, business-hours reporting clock, and independent website welcome kiosks.
-- 1789464795: Added a three-marketplace catalog import depot and four-message text/image printshop, with image-close controls and a stable narrow console.
-- 1790679076: Added a scoped staff notification belfry with in-app/Web Push previews and independently branded website widgets with starter keywords and desktop/mobile displays.
-- 1791286027: Upgraded the case arcade with lane visibility/order controls, conversation tags, compact toolbar labels, and customer portraits or colored initials.
-- Connected seven grounded landmarks to existing modules, added paths and footprint colliders, and retained adaptive detail rendering.
+1793076349
+- 1792471421: Added Lazada/TikTok Shop order-chat waiting rooms that keep empty chats outside the Inbox, plus an authorized AI workspace signwriter with independent description/logo controls.
+- 1793076349: Added a Facebook/Instagram public-comment court with source-post context, public-reply warnings, and a Facebook send-failure reconnection signal.
+- Added a history archive showing 30-day free and 180-day paid defaults, custom/unlimited overrides, and upgrade guidance for older messages.
+- Added a Cortex reading room linking learning results to source-message context and an in-app product gazette.
+- Connected five grounded, non-overlapping landmarks to existing modules; retained adaptive detail rendering and fixed footprint colliders.
